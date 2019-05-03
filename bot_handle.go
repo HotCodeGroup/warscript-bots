@@ -99,19 +99,19 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// делаем RPC запрос
-	events, err := sendForVerifyRPC(&TestTask{
-		Code1:    form.Code,
-		Code2:    gameInfo.BotCode,
-		GameSlug: gameInfo.Slug, // так как citext, то ориджинал слаг в gameInfo
-		Language: form.Language,
-	})
-	if err != nil {
-		errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "can not call verify rpc"))
-		return
-	}
+	// events, err := sendForVerifyRPC(&TestTask{
+	// 	Code1:    form.Code,
+	// 	Code2:    gameInfo.BotCode,
+	// 	GameSlug: gameInfo.Slug, // так как citext, то ориджинал слаг в gameInfo
+	// 	Language: form.Language,
+	// })
+	// if err != nil {
+	// 	errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "can not call verify rpc"))
+	// 	return
+	// }
 
-	// запускаем обработчик ответа RPC
-	go processTestingStatus(bot.ID.Int, info.ID, bot.GameSlug.String, h.broadcast, events)
+	// // запускаем обработчик ответа RPC
+	// go processTestingStatus(bot.ID.Int, info.ID, bot.GameSlug.String, h.broadcast, events)
 	utils.WriteApplicationJSON(w, http.StatusOK, botFull)
 }
 

@@ -1,3 +1,4 @@
+CREATE EXTENSION citext;
 DROP TYPE IF EXISTS LANG CASCADE;
 CREATE TYPE LANG AS ENUM ('JS');
 
@@ -11,8 +12,8 @@ CREATE TABLE "bots"
 	language LANG NOT NULL,
 	is_active BOOLEAN NOT NULL DEFAULT FALSE,
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
-	author_username citext NOT NULL REFERENCES users (username) ON DELETE CASCADE,
-	game_slug citext NOT NULL REFERENCES games (slug) ON DELETE CASCADE,
+	author_username citext CONSTRAINT username_empty NOT NULL CHECK ( author_username <> '' ),
+	game_slug citext CONSTRAINT game_slug_empty NOT NULL CHECK ( game_slug <> '' ),
 
 	CONSTRAINT unique_code UNIQUE (code, language, author_username, game_slug)
 );
