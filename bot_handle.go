@@ -110,6 +110,7 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	logger.Infof("%+v", h)
 	// запускаем обработчик ответа RPC
 	go processTestingStatus(bot.ID.Int, info.ID, bot.GameSlug.String, h.broadcast, events)
 	utils.WriteApplicationJSON(w, http.StatusOK, botFull)

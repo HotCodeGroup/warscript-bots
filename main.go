@@ -160,7 +160,6 @@ func main() {
 		register:   make(chan *BotVerifyClient),
 		unregister: make(chan *BotVerifyClient),
 	}
-
 	go h.run()
 
 	r := mux.NewRouter().PathPrefix("/v1").Subrouter()

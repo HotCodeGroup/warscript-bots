@@ -62,14 +62,3 @@ func (h *hub) run() {
 		}
 	}
 }
-
-func init() {
-	h = &hub{
-		sessions:   make(map[int64]map[string]map[string]chan *BotVerifyStatusMessage),
-		broadcast:  make(chan *BotVerifyStatusMessage),
-		register:   make(chan *BotVerifyClient),
-		unregister: make(chan *BotVerifyClient),
-	}
-
-	go h.run()
-}
