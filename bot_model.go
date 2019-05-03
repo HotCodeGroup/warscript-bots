@@ -47,7 +47,7 @@ func (bd *AccessObject) Create(b *BotModel) error {
 	defer tx.Rollback()
 
 	row := tx.QueryRow(`INSERT INTO bots (code, language, author_username, game_slug)
-	 	VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+	 	VALUES ($1, $2, $3, $4) RETURNING id`,
 		&b.Code, &b.Language, &b.AuthorUsername, &b.GameSlug)
 	if err = row.Scan(&b.ID); err != nil {
 		pgErr, ok := err.(pgx.PgError)
