@@ -12,6 +12,7 @@ require (
 	github.com/hashicorp/vault/api v1.0.1
 	github.com/jackc/pgx v3.3.0+incompatible
 	github.com/pkg/errors v0.8.1
+	github.com/prometheus/common v0.3.0
 	github.com/sirupsen/logrus v1.4.1
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
 	google.golang.org/appengine v1.4.0 // indirect

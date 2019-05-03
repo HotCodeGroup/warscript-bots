@@ -130,7 +130,7 @@ func main() {
 	}
 	defer rabbitConn.Close()
 
-	rabbitChannel, err := rabbitConn.Channel()
+	rabbitChannel, err = rabbitConn.Channel()
 	if err != nil {
 		logger.Errorf("can not create rabbitmq channel: %s", err.Error())
 		return

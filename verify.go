@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -97,7 +97,7 @@ func sendForVerifyRPC(task *TestTask) (<-chan *TesterStatusQueue, error) {
 			testerResp := &TesterStatusQueue{}
 			err := json.Unmarshal(resp.Body, testerResp)
 			if err != nil {
-				log.WithField("method", "sendForVerifyRPC goroutine").Error(errors.Wrap(err, "unmarshal tester response error"))
+				logger.WithField("method", "sendForVerifyRPC goroutine").Error(errors.Wrap(err, "unmarshal tester response error"))
 				break
 			}
 			out <- testerResp
@@ -109,7 +109,7 @@ func sendForVerifyRPC(task *TestTask) (<-chan *TesterStatusQueue, error) {
 					false,
 				)
 				if err != nil {
-					log.WithField("method", "sendForVerifyRPC goroutine").Error(errors.Wrap(err, "queue cancel error"))
+					logger.WithField("method", "sendForVerifyRPC goroutine").Error(errors.Wrap(err, "queue cancel error"))
 				}
 			}
 		}
@@ -124,7 +124,7 @@ func sendForVerifyRPC(task *TestTask) (<-chan *TesterStatusQueue, error) {
 func processTestingStatus(botID, authorID int64, gameSlug string,
 	broadcast chan<- *BotVerifyStatusMessage, events <-chan *TesterStatusQueue) {
 
-	logger := log.WithFields(log.Fields{
+	logger := logger.WithFields(logrus.Fields{
 		"bot_id": botID,
 		"method": "processTestingStatus",
 	})
@@ -184,7 +184,7 @@ func processTestingStatus(botID, authorID int64, gameSlug string,
 				continue
 			}
 
-			log.Info(res.Error)
+			logger.Info(res.Error)
 			newStatus := "Not Verifyed. Error!\n"
 			broadcast <- &BotVerifyStatusMessage{
 				BotID:     botID,
