@@ -3,8 +3,6 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/go-park-mail-ru/2019_1_HotCode/queue"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
@@ -42,7 +40,7 @@ type TestTask struct {
 }
 
 func sendForVerifyRPC(task *TestTask) (<-chan *TesterStatusQueue, error) {
-	respQ, err := queue.Channel.QueueDeclare(
+	respQ, err := rabbitChannel.QueueDeclare(
 		"", // пакет amqp сам сгенерит
 		false,
 		true,
@@ -55,7 +53,7 @@ func sendForVerifyRPC(task *TestTask) (<-chan *TesterStatusQueue, error) {
 	}
 
 	requestUUID := uuid.New().String()
-	resps, err := queue.Channel.Consume(
+	resps, err := rabbitChannel.Consume(
 		respQ.Name,
 		requestUUID,
 		true,
@@ -73,7 +71,7 @@ func sendForVerifyRPC(task *TestTask) (<-chan *TesterStatusQueue, error) {
 		return nil, errors.Wrap(err, "can not marshal bot info")
 	}
 
-	err = queue.Channel.Publish(
+	err = rabbitChannel.Publish(
 		"",
 		testerQueueName,
 		false,
@@ -106,7 +104,7 @@ func sendForVerifyRPC(task *TestTask) (<-chan *TesterStatusQueue, error) {
 
 			if testerResp.Type == "result" || testerResp.Type == "error" {
 				// отцепились от очереди -- она удалилась
-				err = queue.Channel.Cancel(
+				err = rabbitChannel.Cancel(
 					corrID,
 					false,
 				)

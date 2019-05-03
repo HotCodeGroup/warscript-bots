@@ -4,6 +4,8 @@ github.com/HotCodeGroup/warscript-utils v0.0.0-20190503160451-f8235b431857 h1:ji
 github.com/HotCodeGroup/warscript-utils v0.0.0-20190503160451-f8235b431857/go.mod h1:jlB2/oOpNLRnrFC4zEmsIP1793sEUWeujwLEu5cKtfU=
 github.com/HotCodeGroup/warscript-utils v0.0.0-20190503161944-93e911069855 h1:O10bgZe3yklySTOkNkjYpi0KIII+lTnP1yyU9GPb4RI=
 github.com/HotCodeGroup/warscript-utils v0.0.0-20190503161944-93e911069855/go.mod h1:jlB2/oOpNLRnrFC4zEmsIP1793sEUWeujwLEu5cKtfU=
+github.com/HotCodeGroup/warscript-utils v0.0.0-20190503200117-a3d3629267fb h1:y+tTzTMVCopxt87l6gplyb04TKN4yLixQRSDH25B7HA=
+github.com/HotCodeGroup/warscript-utils v0.0.0-20190503200117-a3d3629267fb/go.mod h1:qIuA0jQDTAPKUIg0qE6epQB0vyjDId4POVzFAOK/fGI=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da h1:8GUt8eRujhVEGZFFEjBj46YV4rDjvGrNxb0KMWYkL2I=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=

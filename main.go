@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/streadway/amqp"
+
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -18,14 +20,19 @@ import (
 	"github.com/HotCodeGroup/warscript-utils/middlewares"
 	"github.com/HotCodeGroup/warscript-utils/models"
 	"github.com/HotCodeGroup/warscript-utils/postgresql"
+	"github.com/HotCodeGroup/warscript-utils/rabbitmq"
 
 	consulapi "github.com/hashicorp/consul/api"
 	vaultapi "github.com/hashicorp/vault/api"
 )
 
-var logger *logrus.Logger
-var gamesGPRC models.GamesClient
-var authGPRC models.AuthClient
+var (
+	logger    *logrus.Logger
+	gamesGPRC models.GamesClient
+	authGPRC  models.AuthClient
+
+	rabbitChannel *amqp.Channel
+)
 
 func connectClient(consulCli *consulapi.Client, service string) (*grpc.ClientConn, error) {
 	nameResolver, servers, err := balancer.NewNameResolver(consulCli, service)
@@ -88,6 +95,11 @@ func main() {
 		logger.Errorf("can read warscript-bots/postges key: %+v; %+v", err, postgreConf)
 		return
 	}
+	rabbitConf, err := vault.Logical().Read("warscript-bots/rabbitmq")
+	if err != nil || rabbitConf == nil || len(rabbitConf.Warnings) != 0 {
+		logger.Errorf("can read warscript-bots/rabbitmq key: %+v; %+v", err, rabbitConf)
+		return
+	}
 
 	httpServiceID := fmt.Sprintf("warscript-bots-http:%d", httpPort)
 	err = consul.Agent().ServiceRegister(&consulapi.AgentServiceRegistration{
@@ -111,6 +123,21 @@ func main() {
 		return
 	}
 	defer pgxConn.Close()
+
+	rabbitConn, err := rabbitmq.Connect(rabbitConf.Data["user"].(string), rabbitConf.Data["pass"].(string),
+		rabbitConf.Data["host"].(string), rabbitConf.Data["port"].(string))
+	if err != nil {
+		logger.Errorf("can not connect to rabbitmq: %s", err.Error())
+		return
+	}
+	defer rabbitConn.Close()
+
+	rabbitChannel, err := rabbitConn.Channel()
+	if err != nil {
+		logger.Errorf("can not create rabbitmq channel: %s", err.Error())
+		return
+	}
+	defer rabbitChannel.Close()
 
 	authGPRCConn, err := connectClient(consul, "warscript-users-grpc")
 	if err != nil {
