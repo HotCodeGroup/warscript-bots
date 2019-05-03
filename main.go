@@ -41,7 +41,6 @@ func connectClient(consulCli *consulapi.Client, service string) (*grpc.ClientCon
 
 	}
 
-	logger.Info("hello")
 	grpcConn, err := grpc.Dial(
 		servers[0],
 		grpc.WithInsecure(),
@@ -51,7 +50,6 @@ func connectClient(consulCli *consulapi.Client, service string) (*grpc.ClientCon
 	if err != nil {
 		return nil, errors.Wrap(err, "can not connect to auth grpc")
 	}
-	logger.Info("hello")
 
 	nameResolver.LoadServers(servers)
 	go balancer.OnlineServiceDiscovery(consulCli, nameResolver, service, servers, 15*time.Second)
@@ -155,6 +153,15 @@ func main() {
 	// defer gamesGPRCConn.Close()
 	// gamesGPRC = models.NewGamesClient(gamesGPRCConn)
 	gamesGPRC = &LocalGameClient{}
+
+	h = &hub{
+		sessions:   make(map[int64]map[string]map[string]chan *BotVerifyStatusMessage),
+		broadcast:  make(chan *BotVerifyStatusMessage),
+		register:   make(chan *BotVerifyClient),
+		unregister: make(chan *BotVerifyClient),
+	}
+
+	go h.run()
 
 	r := mux.NewRouter().PathPrefix("/v1").Subrouter()
 	r.HandleFunc("/bots", middlewares.WithAuthentication(CreateBot, logger, authGPRC)).Methods("POST")
