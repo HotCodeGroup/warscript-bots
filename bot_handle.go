@@ -174,7 +174,7 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// формиурем хеш ответов
-		authorsSet := make(map[int64]*models.InfoUser, len(authorsInfo.Users))
+		authorsSet = make(map[int64]*models.InfoUser, len(authorsInfo.Users))
 		for _, authorInfo := range authorsInfo.Users {
 			authorsSet[authorInfo.ID] = authorInfo
 		}
