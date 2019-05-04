@@ -153,7 +153,7 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 
 	// если мы выбираем только для одного юзера, то нет смысла ходить по сети
 	var authorsSet map[int64]*models.InfoUser
-	if authorID != -1 && userInfo != nil {
+	if authorID == -1 && userInfo == nil {
 		// фомируем массив из всех айдишников авторов ботов
 		userIDsSet := make(map[int64]struct{})
 		for _, bot := range bots {
