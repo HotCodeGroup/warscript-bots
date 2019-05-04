@@ -68,10 +68,10 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	bot := &BotModel{
-		Code:           pgtype.Text{String: form.Code, Status: pgtype.Present},
-		Language:       pgtype.Varchar{String: string(form.Language), Status: pgtype.Present},
-		GameSlug:       pgtype.Varchar{String: gameInfo.Slug, Status: pgtype.Present},
-		AuthorUsername: pgtype.Varchar{String: userInfo.Username, Status: pgtype.Present},
+		Code:     pgtype.Text{String: form.Code, Status: pgtype.Present},
+		Language: pgtype.Varchar{String: string(form.Language), Status: pgtype.Present},
+		GameSlug: pgtype.Varchar{String: gameInfo.Slug, Status: pgtype.Present},
+		AuthorID: pgtype.Int8{Int: userInfo.ID, Status: pgtype.Present},
 	}
 
 	if err = Bots.Create(bot); err != nil {
@@ -88,11 +88,16 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 
 	botFull := BotFull{
 		Bot: Bot{
-			ID:             bot.ID.Int,
-			AuthorUsername: bot.AuthorUsername.String,
-			IsActive:       bot.IsActive.Bool,
-			IsVerified:     bot.IsVerified.Bool,
-			GameSlug:       bot.GameSlug.String,
+			AuthorInfo: AuthorInfo{
+				ID:        userInfo.ID,
+				Username:  userInfo.Username,
+				PhotoUUID: userInfo.PhotoUUID,
+				Active:    userInfo.Active,
+			},
+			ID:         bot.ID.Int,
+			IsActive:   bot.IsActive.Bool,
+			IsVerified: bot.IsVerified.Bool,
+			GameSlug:   bot.GameSlug.String,
 		},
 		Code:     form.Code,
 		Language: form.Language,
@@ -114,28 +119,96 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 	utils.WriteApplicationJSON(w, http.StatusOK, botFull)
 }
 
-// GetBotsList TODO: author_id parameter
 func GetBotsList(w http.ResponseWriter, r *http.Request) {
 	logger := utils.GetLogger(r, logger, "GetBotsList")
 	errWriter := utils.NewErrorResponseWriter(w, logger)
 
 	authorUsername := r.URL.Query().Get("author")
-	gameSlug := r.URL.Query().Get("game_slug")
+
+	var authorID int64 = -1
+
 	var err error
-	bots, err := Bots.GetBotsByGameSlugAndAuthorUsername(authorUsername, gameSlug)
+	var userInfo *models.InfoUser
+	if authorUsername != "" {
+		userInfo, err = authGPRC.GetUserByUsername(context.Background(), &models.Username{Username: authorUsername})
+		if err != nil {
+			if errors.Cause(err) == utils.ErrNotExists {
+				utils.WriteApplicationJSON(w, http.StatusOK, []*Bot{})
+			} else {
+				errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "can not find user by username"))
+			}
+
+			return
+		}
+
+		authorID = userInfo.ID
+	}
+
+	gameSlug := r.URL.Query().Get("game_slug")
+	bots, err := Bots.GetBotsByGameSlugAndAuthorID(authorID, gameSlug)
 	if err != nil {
 		errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "get bot method error"))
 		return
 	}
 
+	// если мы выбираем только для одного юзера, то нет смысла ходить по сети
+	var authorsSet map[int64]*models.InfoUser
+	if authorID != -1 && userInfo != nil {
+		// фомируем массив из всех айдишников авторов ботов
+		userIDsSet := make(map[int64]struct{})
+		for _, bot := range bots {
+			userIDsSet[bot.AuthorID.Int] = struct{}{}
+		}
+		userIDsM := &models.UserIDs{
+			IDs: make([]*models.UserID, 0, len(userIDsSet)),
+		}
+		for id := range userIDsSet {
+			userIDsM.IDs = append(userIDsM.IDs, &models.UserID{ID: id})
+		}
+
+		// делаем запрос
+		authorsInfo, err := authGPRC.GetUsersByIDs(context.Background(), userIDsM)
+		if err != nil {
+			errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "can not find user by ids"))
+			return
+		}
+
+		// формиурем хеш ответов
+		authorsSet := make(map[int64]*models.InfoUser, len(authorsInfo.Users))
+		for _, authorInfo := range authorsInfo.Users {
+			authorsSet[authorInfo.ID] = authorInfo
+		}
+	}
+
 	respBots := make([]*Bot, len(bots))
 	for i, bot := range bots {
+		var ai AuthorInfo
+
+		// если мы выбираем только для одного юзера
+		if authorID != -1 && userInfo != nil {
+			ai = AuthorInfo{
+				ID:        userInfo.ID,
+				Username:  userInfo.Username,
+				PhotoUUID: userInfo.PhotoUUID,
+				Active:    userInfo.Active,
+			}
+		} else {
+			if protUser, ok := authorsSet[bot.AuthorID.Int]; ok {
+				ai = AuthorInfo{
+					ID:        protUser.ID,
+					Username:  protUser.Username,
+					PhotoUUID: protUser.PhotoUUID,
+					Active:    protUser.Active,
+				}
+			}
+		}
+
 		respBots[i] = &Bot{
-			ID:             bot.ID.Int,
-			GameSlug:       bot.GameSlug.String,
-			AuthorUsername: bot.AuthorUsername.String,
-			IsActive:       bot.IsActive.Bool,
-			IsVerified:     bot.IsVerified.Bool,
+			AuthorInfo: ai,
+			ID:         bot.ID.Int,
+			GameSlug:   bot.GameSlug.String,
+			IsActive:   bot.IsActive.Bool,
+			IsVerified: bot.IsVerified.Bool,
 		}
 	}
 

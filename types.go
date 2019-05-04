@@ -27,12 +27,19 @@ func (bu *BotUpload) Validate() error {
 	return nil
 }
 
+type AuthorInfo struct {
+	ID        int64  `json:"id"`
+	Username  string `json:"username"`
+	PhotoUUID string `json:"photo_uuid"`
+	Active    bool   `json:"active"`
+}
+
 type Bot struct {
-	ID             int64  `json:"id"`
-	GameSlug       string `json:"game_slug"`
-	AuthorUsername string `json:"author_username"`
-	IsActive       bool   `json:"is_active"`
-	IsVerified     bool   `json:"is_verified"`
+	AuthorInfo
+	ID         int64  `json:"id"`
+	GameSlug   string `json:"game_slug"`
+	IsActive   bool   `json:"is_active"`
+	IsVerified bool   `json:"is_verified"`
 }
 
 type BotFull struct {

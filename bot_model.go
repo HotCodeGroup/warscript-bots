@@ -15,7 +15,7 @@ var pgxConn *pgx.ConnPool
 type BotAccessObject interface {
 	Create(b *BotModel) error
 	SetBotVerifiedByID(botID int64, isActive bool) error
-	GetBotsByGameSlugAndAuthorUsername(author, game string) ([]*BotModel, error)
+	GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error)
 }
 
 // AccessObject implementation of BotAccessObject
@@ -29,13 +29,13 @@ func init() {
 
 // Bot mode for bots table
 type BotModel struct {
-	ID             pgtype.Int8
-	Code           pgtype.Text
-	Language       pgtype.Varchar
-	IsActive       pgtype.Bool
-	IsVerified     pgtype.Bool
-	AuthorUsername pgtype.Varchar
-	GameSlug       pgtype.Varchar
+	ID         pgtype.Int8
+	Code       pgtype.Text
+	Language   pgtype.Varchar
+	IsActive   pgtype.Bool
+	IsVerified pgtype.Bool
+	AuthorID   pgtype.Int8
+	GameSlug   pgtype.Varchar
 }
 
 func (bd *AccessObject) Create(b *BotModel) error {
@@ -46,9 +46,9 @@ func (bd *AccessObject) Create(b *BotModel) error {
 	//nolint: errcheck
 	defer tx.Rollback()
 
-	row := tx.QueryRow(`INSERT INTO bots (code, language, author_username, game_slug)
+	row := tx.QueryRow(`INSERT INTO bots (code, language, author_id, game_slug)
 	 	VALUES ($1, $2, $3, $4) RETURNING id`,
-		&b.Code, &b.Language, &b.AuthorUsername, &b.GameSlug)
+		&b.Code, &b.Language, &b.AuthorID, &b.GameSlug)
 	if err = row.Scan(&b.ID); err != nil {
 		pgErr, ok := err.(pgx.PgError)
 		if !ok {
@@ -84,14 +84,14 @@ func (bd *AccessObject) SetBotVerifiedByID(botID int64, isVerified bool) error {
 	return nil
 }
 
-func (bd *AccessObject) GetBotsByGameSlugAndAuthorUsername(author, game string) ([]*BotModel, error) {
+func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error) {
 	args := []interface{}{}
 	query := `SELECT b.id, b.code, b.language,
-	b.is_active, b.is_verified, b.author_username, b.game_slug 
+	b.is_active, b.is_verified, b.author_id, b.game_slug 
 	FROM bots b`
-	if author != "" {
-		query += ` WHERE b.author_username = $1`
-		args = append(args, author)
+	if authorID > 0 {
+		query += ` WHERE b.author_id = $1`
+		args = append(args, authorID)
 	}
 
 	if game != "" {
@@ -117,7 +117,7 @@ func (bd *AccessObject) GetBotsByGameSlugAndAuthorUsername(author, game string) 
 		bot := &BotModel{}
 		err = rows.Scan(&bot.ID, &bot.Code,
 			&bot.Language, &bot.IsActive, &bot.IsVerified,
-			&bot.AuthorUsername, &bot.GameSlug)
+			&bot.AuthorID, &bot.GameSlug)
 		if err != nil {
 			return nil, errors.Wrap(err, "get bots by game slug and author id scan bot error")
 		}
