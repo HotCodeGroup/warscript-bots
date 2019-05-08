@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"math"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -15,7 +16,6 @@ var (
 )
 
 func startMatchmaking() {
-
 	for {
 		timer := time.NewTimer(2 * time.Second)
 		for _, gameSlug := range gameSlugs {
@@ -28,6 +28,7 @@ func startMatchmaking() {
 				continue
 			}
 
+			wg := sync.WaitGroup{}
 			for i := 0; i < len(bots); i += 2 {
 				if bots[i].Language == bots[i+1].Language {
 					// делаем RPC запрос
@@ -42,9 +43,17 @@ func startMatchmaking() {
 						continue
 					}
 					// запускаем обработчик ответа RPC
-					go processTestingStatus(bots[i], bots[i+1], h.broadcast, events)
+
+					go func(b1 *BotModel, b2 *BotModel, ev <-chan *TesterStatusQueue) {
+						defer wg.Done()
+
+						wg.Add(1)
+						processTestingStatus(b1, b2, h.broadcast, ev)
+					}(bots[i], bots[i+1], events)
 				}
 			}
+
+			wg.Wait()
 		}
 		<-timer.C
 	}
