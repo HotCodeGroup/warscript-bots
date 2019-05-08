@@ -42,6 +42,7 @@ type Bot struct {
 	GameSlug   string      `json:"game_slug"`
 	IsActive   bool        `json:"is_active"`
 	IsVerified bool        `json:"is_verified"`
+	Score      int64       `json:"score"`
 }
 
 type BotFull struct {

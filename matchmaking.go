@@ -24,6 +24,7 @@ func startMatchmaking() {
 			if len(bots) < 1 {
 				continue
 			}
+
 			for i := 0; i < len(bots); i += 2 {
 				if bots[i].Language == bots[i+1].Language {
 					// делаем RPC запрос

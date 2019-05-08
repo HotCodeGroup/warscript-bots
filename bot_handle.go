@@ -98,6 +98,7 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 			IsActive:   bot.IsActive.Bool,
 			IsVerified: bot.IsVerified.Bool,
 			GameSlug:   bot.GameSlug.String,
+			Score:      bot.Score.Int,
 		},
 		Code:     form.Code,
 		Language: form.Language,
@@ -209,6 +210,7 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 			GameSlug:   bot.GameSlug.String,
 			IsActive:   bot.IsActive.Bool,
 			IsVerified: bot.IsVerified.Bool,
+			Score:      bot.Score.Int,
 		}
 	}
 
