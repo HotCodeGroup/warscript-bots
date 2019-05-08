@@ -118,7 +118,7 @@ func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string
 		query += strconv.Itoa(len(args) + 1)
 		args = append(args, game)
 	}
-	query += ";"
+	query += " ORDER BY b.score DESC;"
 
 	rows, err := pgxConn.Query(query, args...)
 	if err != nil {
