@@ -101,7 +101,7 @@ func (bd *AccessObject) SetBotScoreByID(botID int64, newScore int64) error {
 func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error) {
 	args := []interface{}{}
 	query := `SELECT b.id, b.code, b.language,
-	b.is_active, b.is_verified, b.author_id, b.game_slug 
+	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played 
 	FROM bots b`
 	if authorID > 0 {
 		query += ` WHERE b.author_id = $1`
@@ -131,7 +131,7 @@ func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string
 		bot := &BotModel{}
 		err = rows.Scan(&bot.ID, &bot.Code,
 			&bot.Language, &bot.IsActive, &bot.IsVerified,
-			&bot.AuthorID, &bot.GameSlug)
+			&bot.AuthorID, &bot.GameSlug, &bot.Score, &bot.GamesPlayed)
 		if err != nil {
 			return nil, errors.Wrap(err, "get bots by game slug and author id scan bot error")
 		}
