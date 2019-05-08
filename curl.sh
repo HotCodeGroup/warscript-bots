@@ -1,1 +1,0 @@
-curl -v --cookie "JSESSIONID=84729074-d215-45d2-9a65-15f7c807c933" http://89.208.198.192/

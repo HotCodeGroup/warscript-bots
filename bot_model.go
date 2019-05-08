@@ -15,6 +15,7 @@ var pgxConn *pgx.ConnPool
 type BotAccessObject interface {
 	Create(b *BotModel) error
 	SetBotVerifiedByID(botID int64, isActive bool) error
+	SetBotScoreByID(botID int64, newScore int) error
 	GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error)
 	GetBotsForTesting(N int64, game string) ([]*BotModel, error)
 }
@@ -81,6 +82,16 @@ func (bd *AccessObject) SetBotVerifiedByID(botID int64, isVerified bool) error {
 			return errors.Wrap(utils.ErrNotExists, errors.Wrap(err, "now row to update").Error())
 		}
 
+		return errors.Wrap(err, "can not update bot row")
+	}
+
+	return nil
+}
+
+func (bd *AccessObject) SetBotScoreByID(botID int64, newScore int) error {
+	_, err := pgxConn.Exec(`UPDATE bots SET score = $1 
+									WHERE bots.id = $2;`, newScore, botID)
+	if err != nil {
 		return errors.Wrap(err, "can not update bot row")
 	}
 
