@@ -183,6 +183,12 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 					logger.Error(errors.Wrap(err, "can update bot verified status"))
 					continue
 				}
+
+				err = Bots.SetBotScoreByID(botID, 400)
+				if err != nil {
+					logger.Error(errors.Wrap(err, "can update bot verified status"))
+					continue
+				}
 			}
 
 			status = newStatus
