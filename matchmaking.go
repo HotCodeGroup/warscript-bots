@@ -17,7 +17,7 @@ var (
 
 func startMatchmaking() {
 	for {
-		timer := time.NewTimer(2 * time.Second)
+		timer := time.NewTimer(10 * time.Second)
 		for _, gameSlug := range gameSlugs {
 			bots, err := Bots.GetBotsForTesting(botsLimit, gameSlug)
 			if err != nil {
@@ -29,12 +29,14 @@ func startMatchmaking() {
 			}
 
 			wg := sync.WaitGroup{}
-			for i := 0; i < len(bots); i += 2 {
-				if bots[i].Language == bots[i+1].Language {
+			for i := 0; i < len(bots); i += 1 {
+				nextI := (i + 1) % len(bots)
+
+				if bots[i].Language == bots[nextI].Language && bots[i].AuthorID != bots[nextI].AuthorID {
 					// делаем RPC запрос
 					events, err := sendForVerifyRPC(&TestTask{
 						Code1:    bots[i].Code.String,
-						Code2:    bots[i+1].Code.String,
+						Code2:    bots[nextI].Code.String,
 						GameSlug: gameSlug, // так как citext, то ориджинал слаг в gameInfo
 						Language: Lang(bots[i].Language.String),
 					})
@@ -49,7 +51,7 @@ func startMatchmaking() {
 
 						wg.Add(1)
 						processTestingStatus(b1, b2, h.broadcast, ev)
-					}(bots[i], bots[i+1], events)
+					}(bots[i], bots[nextI], events)
 				}
 			}
 

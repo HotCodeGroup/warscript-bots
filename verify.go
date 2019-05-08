@@ -177,10 +177,12 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				Body:     body,
 			}
 
-			err = Bots.SetBotVerifiedByID(botID, res.Winner == 1)
-			if err != nil {
-				logger.Error(errors.Wrap(err, "can update bot active status"))
-				continue
+			if res.Winner == 1 || res.Winner == 0 {
+				err = Bots.SetBotVerifiedByID(botID, true)
+				if err != nil {
+					logger.Error(errors.Wrap(err, "can update bot verified status"))
+					continue
+				}
 			}
 
 			status = newStatus
