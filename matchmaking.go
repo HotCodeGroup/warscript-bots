@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"math"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -14,7 +15,9 @@ var (
 )
 
 func startMatchmaking() {
+
 	for {
+		timer := time.NewTimer(2 * time.Second)
 		for _, gameSlug := range gameSlugs {
 			bots, err := Bots.GetBotsForTesting(botsLimit, gameSlug)
 			if err != nil {
@@ -43,6 +46,7 @@ func startMatchmaking() {
 				}
 			}
 		}
+		<-timer.C
 	}
 }
 
@@ -97,25 +101,40 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				continue
 			}
 
-			newStatus := "Not Verifyed\n"
-			if res.Winner == 1 {
-				newStatus = "Verifyed\n"
+			newScore1, newScore2 := newRatings(bot1.Score.Int, bot2.Score.Int, res.Winner)
+
+			body, _ := json.Marshal(&MatchResult{
+				Bot1ID:    bot1.ID.Int,
+				Bot2ID:    bot2.ID.Int,
+				Author1ID: bot1.AuthorID.Int,
+				Author2ID: bot2.AuthorID.Int,
+				NewScore1: newScore1,
+				NewScore2: newScore2,
+				Winner:    res.Winner,
+			})
+
+			broadcast <- &BotStatusMessage{
+				AuthorID: bot1.AuthorID.Int,
+				GameSlug: gameSlug,
+				Body:     body,
 			}
 
 			broadcast <- &BotStatusMessage{
-				BotID:     botID,
-				AuthorID:  authorID,
-				GameSlug:  gameSlug,
-				NewStatus: newStatus,
+				AuthorID: bot2.AuthorID.Int,
+				GameSlug: gameSlug,
+				Body:     body,
 			}
 
-			err = Bots.SetBotVerifiedByID(botID, res.Winner == 1)
+			err = Bots.SetBotScoreByID(bot1.ID.Int, newScore1)
 			if err != nil {
-				logger.Error(errors.Wrap(err, "can update bot active status"))
+				logger.Error(errors.Wrap(err, "can't update bot1 score"))
 				continue
 			}
-
-			status = newStatus
+			err = Bots.SetBotScoreByID(bot2.ID.Int, newScore2)
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can't update bot2 score"))
+				continue
+			}
 		case "error":
 			res := &TesterStatusError{}
 			err := json.Unmarshal(event.Body, res)
@@ -125,21 +144,28 @@ func processTestingStatus(bot1, bot2 *BotModel,
 			}
 
 			logger.Info(res.Error)
-			newStatus := "Not Verifyed. Error!\n"
+
+			body, _ := json.Marshal(&MatchResult{
+				Bot1ID:    bot1.ID.Int,
+				Bot2ID:    bot2.ID.Int,
+				Author1ID: bot1.AuthorID.Int,
+				Author2ID: bot2.AuthorID.Int,
+				NewScore1: bot1.Score.Int,
+				NewScore2: bot2.Score.Int,
+				Winner:    -1,
+			})
+
 			broadcast <- &BotStatusMessage{
-				BotID:     botID,
-				AuthorID:  authorID,
-				GameSlug:  gameSlug,
-				NewStatus: newStatus,
+				AuthorID: bot1.AuthorID.Int,
+				GameSlug: gameSlug,
+				Body:     body,
 			}
 
-			err = Bots.SetBotVerifiedByID(botID, false)
-			if err != nil {
-				logger.Error(errors.Wrap(err, "can update bot active status"))
-				continue
+			broadcast <- &BotStatusMessage{
+				AuthorID: bot2.AuthorID.Int,
+				GameSlug: gameSlug,
+				Body:     body,
 			}
-
-			status = newStatus
 		default:
 			logger.Error(errors.New("can not process unknown status type"))
 		}
@@ -148,18 +174,18 @@ func processTestingStatus(bot1, bot2 *BotModel,
 	}
 }
 
-func newRatings(sc1, sc2, winner int) (int, int) {
+func newRatings(sc1, sc2 int64, winner int) (int64, int64) {
 	if winner == 0 {
-		return sc1 + int(40*(0.5-expVal(sc2, sc1))), sc2 + int(40*(0.5-expVal(sc1, sc2)))
+		return sc1 + int64(40*(0.5-expVal(sc2, sc1))), sc2 + int64(40*(0.5-expVal(sc1, sc2)))
 	} else if winner == 1 {
-		return sc1 + int(40*(1-expVal(sc2, sc1))), sc2 - int(40*(expVal(sc1, sc2)))
+		return sc1 + int64(40*(1-expVal(sc2, sc1))), sc2 - int64(40*(expVal(sc1, sc2)))
 	} else if winner == 2 {
-		return sc1 - int(40*(expVal(sc2, sc1))), sc2 + int(40*(1-expVal(sc1, sc2)))
+		return sc1 - int64(40*(expVal(sc2, sc1))), sc2 + int64(40*(1-expVal(sc1, sc2)))
 	}
 
 	return sc1, sc2
 }
 
-func expVal(sc1, sc2 int) float64 {
+func expVal(sc1, sc2 int64) float64 {
 	return 1.0 / (1 + math.Pow(10, float64(sc1-sc2)/400))
 }

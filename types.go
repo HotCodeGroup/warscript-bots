@@ -70,3 +70,13 @@ type MatchStatus struct {
 	Author2ID int64  `json:"author2_id"`
 	NewStatus string `json:"new_status"`
 }
+
+type MatchResult struct {
+	Bot1ID    int64 `json:"bot1_id"`
+	Bot2ID    int64 `json:"bot2_id"`
+	Author1ID int64 `json:"author1_id"`
+	Author2ID int64 `json:"author2_id"`
+	NewScore1 int64 `json:"new_score1"`
+	NewScore2 int64 `json:"new_score2"`
+	Winner    int   `json:"winner"`
+}

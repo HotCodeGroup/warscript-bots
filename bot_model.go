@@ -15,7 +15,7 @@ var pgxConn *pgx.ConnPool
 type BotAccessObject interface {
 	Create(b *BotModel) error
 	SetBotVerifiedByID(botID int64, isActive bool) error
-	SetBotScoreByID(botID int64, newScore int) error
+	SetBotScoreByID(botID int64, newScore int64) error
 	GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error)
 	GetBotsForTesting(N int64, game string) ([]*BotModel, error)
 }
@@ -88,7 +88,7 @@ func (bd *AccessObject) SetBotVerifiedByID(botID int64, isVerified bool) error {
 	return nil
 }
 
-func (bd *AccessObject) SetBotScoreByID(botID int64, newScore int) error {
+func (bd *AccessObject) SetBotScoreByID(botID int64, newScore int64) error {
 	_, err := pgxConn.Exec(`UPDATE bots SET score = $1 
 									WHERE bots.id = $2;`, newScore, botID)
 	if err != nil {
