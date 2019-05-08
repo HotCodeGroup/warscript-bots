@@ -98,12 +98,14 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				AuthorID: bot1.AuthorID.Int,
 				GameSlug: gameSlug,
 				Body:     body,
+				Type:     "match",
 			}
 
 			broadcast <- &BotStatusMessage{
 				AuthorID: bot2.AuthorID.Int,
 				GameSlug: gameSlug,
 				Body:     body,
+				Type:     "match",
 			}
 
 			status = upd.NewStatus
@@ -131,12 +133,14 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				AuthorID: bot1.AuthorID.Int,
 				GameSlug: gameSlug,
 				Body:     body,
+				Type:     "match",
 			}
 
 			broadcast <- &BotStatusMessage{
 				AuthorID: bot2.AuthorID.Int,
 				GameSlug: gameSlug,
 				Body:     body,
+				Type:     "match",
 			}
 
 			err = Bots.SetBotScoreByID(bot1.ID.Int, newScore1)
@@ -173,12 +177,14 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				AuthorID: bot1.AuthorID.Int,
 				GameSlug: gameSlug,
 				Body:     body,
+				Type:     "match",
 			}
 
 			broadcast <- &BotStatusMessage{
 				AuthorID: bot2.AuthorID.Int,
 				GameSlug: gameSlug,
 				Body:     body,
+				Type:     "match",
 			}
 		default:
 			logger.Error(errors.New("can not process unknown status type"))

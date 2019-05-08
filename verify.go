@@ -150,6 +150,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				AuthorID: authorID,
 				GameSlug: gameSlug,
 				Body:     body,
+				Type:     "verify",
 			}
 
 			status = upd.NewStatus
@@ -175,6 +176,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				AuthorID: authorID,
 				GameSlug: gameSlug,
 				Body:     body,
+				Type:     "verify",
 			}
 
 			if res.Winner == 1 || res.Winner == 0 {
@@ -212,6 +214,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				AuthorID: authorID,
 				GameSlug: gameSlug,
 				Body:     body,
+				Type:     "verify",
 			}
 
 			err = Bots.SetBotVerifiedByID(botID, false)
