@@ -31,7 +31,7 @@ func startMatchmaking() {
 			wg := sync.WaitGroup{}
 			for i := 0; i < len(bots); i += 1 {
 				nextI := i + 1
-				if i == len(bots) {
+				if nextI == len(bots) {
 					nextI = 0
 				}
 
