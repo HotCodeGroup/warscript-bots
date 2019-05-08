@@ -134,8 +134,8 @@ func main() {
 	gamesGPRC = models.NewGamesClient(gamesGPRCConn)
 
 	h = &hub{
-		sessions:   make(map[int64]map[string]map[string]chan *BotVerifyStatusMessage),
-		broadcast:  make(chan *BotVerifyStatusMessage),
+		sessions:   make(map[int64]map[string]map[string]chan *BotStatusMessage),
+		broadcast:  make(chan *BotStatusMessage),
 		register:   make(chan *BotVerifyClient),
 		unregister: make(chan *BotVerifyClient),
 	}

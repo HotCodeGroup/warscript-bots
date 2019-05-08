@@ -16,6 +16,7 @@ type BotAccessObject interface {
 	Create(b *BotModel) error
 	SetBotVerifiedByID(botID int64, isActive bool) error
 	GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error)
+	GetBotsForTesting(N int64, game string) ([]*BotModel, error)
 }
 
 // AccessObject implementation of BotAccessObject
@@ -29,13 +30,15 @@ func init() {
 
 // Bot mode for bots table
 type BotModel struct {
-	ID         pgtype.Int8
-	Code       pgtype.Text
-	Language   pgtype.Varchar
-	IsActive   pgtype.Bool
-	IsVerified pgtype.Bool
-	AuthorID   pgtype.Int8
-	GameSlug   pgtype.Varchar
+	ID          pgtype.Int8
+	Code        pgtype.Text
+	Language    pgtype.Varchar
+	IsActive    pgtype.Bool
+	IsVerified  pgtype.Bool
+	AuthorID    pgtype.Int8
+	GameSlug    pgtype.Varchar
+	Score       pgtype.Int8
+	GamesPlayed pgtype.Int8
 }
 
 func (bd *AccessObject) Create(b *BotModel) error {
@@ -120,6 +123,36 @@ func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string
 			&bot.AuthorID, &bot.GameSlug)
 		if err != nil {
 			return nil, errors.Wrap(err, "get bots by game slug and author id scan bot error")
+		}
+		bots = append(bots, bot)
+	}
+
+	return bots, nil
+}
+
+func (bd *AccessObject) GetBotsForTesting(N int64, game string) ([]*BotModel, error) {
+	query := `(SELECT distinct * FROM (SELECT b.id, b.code, b.language,
+	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played
+	FROM bots b WHERE b.is_verified = true AND b.game_slug = $1 AND b.games_played > 0 ORDER BY random() LIMIT $2) l) 
+	UNION
+	(SELECT b.id, b.code, b.language,
+	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played
+	FROM bots b WHERE b.is_verified = true AND b.game_slug = $1 AND b.games_played = 0)`
+
+	rows, err := pgxConn.Query(query, game, N)
+	if err != nil {
+		return nil, errors.Wrap(err, "get bots for testing error")
+	}
+	defer rows.Close()
+
+	bots := make([]*BotModel, 0)
+	for rows.Next() {
+		bot := &BotModel{}
+		err = rows.Scan(&bot.ID, &bot.Code,
+			&bot.Language, &bot.IsActive, &bot.IsVerified,
+			&bot.AuthorID, &bot.GameSlug, &bot.Score, &bot.GamesPlayed)
+		if err != nil {
+			return nil, errors.Wrap(err, "get bots for testing scan bot error")
 		}
 		bots = append(bots, bot)
 	}

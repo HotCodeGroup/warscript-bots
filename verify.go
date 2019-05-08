@@ -98,7 +98,7 @@ func sendForVerifyRPC(task *TestTask) (<-chan *TesterStatusQueue, error) {
 			err := json.Unmarshal(resp.Body, testerResp)
 			if err != nil {
 				logger.WithField("method", "sendForVerifyRPC goroutine").Error(errors.Wrap(err, "unmarshal tester response error"))
-				break
+				continue
 			}
 			out <- testerResp
 
@@ -121,12 +121,12 @@ func sendForVerifyRPC(task *TestTask) (<-chan *TesterStatusQueue, error) {
 	return events, nil
 }
 
-func processTestingStatus(botID, authorID int64, gameSlug string,
-	broadcast chan<- *BotVerifyStatusMessage, events <-chan *TesterStatusQueue) {
+func processVerifyingStatus(botID, authorID int64, gameSlug string,
+	broadcast chan<- *BotStatusMessage, events <-chan *TesterStatusQueue) {
 
 	logger := logger.WithFields(logrus.Fields{
 		"bot_id": botID,
-		"method": "processTestingStatus",
+		"method": "processVerifyingStatus",
 	})
 
 	status := ""
@@ -141,11 +141,15 @@ func processTestingStatus(botID, authorID int64, gameSlug string,
 				continue
 			}
 
-			broadcast <- &BotVerifyStatusMessage{
+			body, _ := json.Marshal(&BotStatus{
 				BotID:     botID,
-				AuthorID:  authorID,
-				GameSlug:  gameSlug,
 				NewStatus: upd.NewStatus,
+			})
+
+			broadcast <- &BotStatusMessage{
+				AuthorID: authorID,
+				GameSlug: gameSlug,
+				Body:     body,
 			}
 
 			status = upd.NewStatus
@@ -162,11 +166,15 @@ func processTestingStatus(botID, authorID int64, gameSlug string,
 				newStatus = "Verifyed\n"
 			}
 
-			broadcast <- &BotVerifyStatusMessage{
+			body, _ := json.Marshal(&BotStatus{
 				BotID:     botID,
-				AuthorID:  authorID,
-				GameSlug:  gameSlug,
 				NewStatus: newStatus,
+			})
+
+			broadcast <- &BotStatusMessage{
+				AuthorID: authorID,
+				GameSlug: gameSlug,
+				Body:     body,
 			}
 
 			err = Bots.SetBotVerifiedByID(botID, res.Winner == 1)
@@ -186,11 +194,16 @@ func processTestingStatus(botID, authorID int64, gameSlug string,
 
 			logger.Info(res.Error)
 			newStatus := "Not Verifyed. Error!\n"
-			broadcast <- &BotVerifyStatusMessage{
+
+			body, _ := json.Marshal(&BotStatus{
 				BotID:     botID,
-				AuthorID:  authorID,
-				GameSlug:  gameSlug,
 				NewStatus: newStatus,
+			})
+
+			broadcast <- &BotStatusMessage{
+				AuthorID: authorID,
+				GameSlug: gameSlug,
+				Body:     body,
 			}
 
 			err = Bots.SetBotVerifiedByID(botID, false)

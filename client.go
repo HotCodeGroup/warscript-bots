@@ -20,7 +20,7 @@ type BotVerifyClient struct {
 
 	h    *hub
 	conn *websocket.Conn
-	send chan *BotVerifyStatusMessage
+	send chan *BotStatusMessage
 }
 
 func (bv *BotVerifyClient) WaitForClose() {

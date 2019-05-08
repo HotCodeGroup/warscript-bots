@@ -4,20 +4,20 @@ var h *hub
 
 type hub struct {
 	// UserID -> GameID -> SessionID -> byte channel
-	sessions map[int64]map[string]map[string]chan *BotVerifyStatusMessage
+	sessions map[int64]map[string]map[string]chan *BotStatusMessage
 
-	broadcast  chan *BotVerifyStatusMessage
+	broadcast  chan *BotStatusMessage
 	register   chan *BotVerifyClient
 	unregister chan *BotVerifyClient
 }
 
 func (h *hub) registerClient(client *BotVerifyClient) {
 	if _, ok := h.sessions[client.UserID]; !ok {
-		h.sessions[client.UserID] = make(map[string]map[string]chan *BotVerifyStatusMessage)
+		h.sessions[client.UserID] = make(map[string]map[string]chan *BotStatusMessage)
 	}
 
 	if _, ok := h.sessions[client.UserID][client.GameSlug]; !ok {
-		h.sessions[client.UserID][client.GameSlug] = make(map[string]chan *BotVerifyStatusMessage)
+		h.sessions[client.UserID][client.GameSlug] = make(map[string]chan *BotStatusMessage)
 	}
 
 	h.sessions[client.UserID][client.GameSlug][client.SessionID] = client.send

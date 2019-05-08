@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"github.com/HotCodeGroup/warscript-utils/utils"
 )
 
@@ -48,9 +50,22 @@ type BotFull struct {
 	Language Lang   `json:"lang"`
 }
 
-type BotVerifyStatusMessage struct {
+type BotStatusMessage struct {
+	AuthorID int64           `json:"-"`
+	GameSlug string          `json:"-"`
+	Type     string          `json:"type"`
+	Body     json.RawMessage `json:"body"`
+}
+
+type BotStatus struct {
 	BotID     int64  `json:"bot_id"`
-	AuthorID  int64  `json:"author_id"`
-	GameSlug  string `json:"game_slug"`
+	NewStatus string `json:"new_status"`
+}
+
+type MatchStatus struct {
+	Bot1ID    int64  `json:"bot1_id"`
+	Bot2ID    int64  `json:"bot2_id"`
+	Author1ID int64  `json:"author1_id"`
+	Author2ID int64  `json:"author2_id"`
 	NewStatus string `json:"new_status"`
 }

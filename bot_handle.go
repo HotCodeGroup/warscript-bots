@@ -60,7 +60,7 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// проверяем, что такая юзер есть, и достаём username
+	// проверяем, что такой юзер есть, и достаём username
 	userInfo, err := authGPRC.GetUserByID(context.Background(), &models.UserID{ID: info.ID})
 	if err != nil {
 		errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "can not find user by session token"))
@@ -115,7 +115,7 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// запускаем обработчик ответа RPC
-	go processTestingStatus(bot.ID.Int, info.ID, bot.GameSlug.String, h.broadcast, events)
+	go processVerifyingStatus(bot.ID.Int, info.ID, bot.GameSlug.String, h.broadcast, events)
 	utils.WriteApplicationJSON(w, http.StatusOK, botFull)
 }
 
@@ -245,7 +245,7 @@ func OpenVerifyWS(w http.ResponseWriter, r *http.Request) {
 
 		h:    h,
 		conn: c,
-		send: make(chan *BotVerifyStatusMessage),
+		send: make(chan *BotStatusMessage),
 	}
 	verifyClient.h.register <- verifyClient
 
