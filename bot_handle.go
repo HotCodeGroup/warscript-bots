@@ -88,7 +88,7 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 
 	botFull := BotFull{
 		Bot: Bot{
-			AuthorInfo: AuthorInfo{
+			Author: &AuthorInfo{
 				ID:        userInfo.ID,
 				Username:  userInfo.Username,
 				PhotoUUID: userInfo.PhotoUUID,
@@ -182,11 +182,11 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 
 	respBots := make([]*Bot, len(bots))
 	for i, bot := range bots {
-		var ai AuthorInfo
+		var ai *AuthorInfo
 
 		// если мы выбираем только для одного юзера
 		if authorID != -1 && userInfo != nil {
-			ai = AuthorInfo{
+			ai = &AuthorInfo{
 				ID:        userInfo.ID,
 				Username:  userInfo.Username,
 				PhotoUUID: userInfo.PhotoUUID,
@@ -194,7 +194,7 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 			}
 		} else {
 			if protUser, ok := authorsSet[bot.AuthorID.Int]; ok {
-				ai = AuthorInfo{
+				ai = &AuthorInfo{
 					ID:        protUser.ID,
 					Username:  protUser.Username,
 					PhotoUUID: protUser.PhotoUUID,
@@ -204,7 +204,7 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 		}
 
 		respBots[i] = &Bot{
-			AuthorInfo: ai,
+			Author:     ai,
 			ID:         bot.ID.Int,
 			GameSlug:   bot.GameSlug.String,
 			IsActive:   bot.IsActive.Bool,

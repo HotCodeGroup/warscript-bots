@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/streadway/amqp"
 
 	"github.com/gorilla/mux"
@@ -145,9 +146,11 @@ func main() {
 	r.HandleFunc("/bots", GetBotsList).Methods("GET")
 	r.HandleFunc("/bots/verification", middlewares.WithAuthentication(OpenVerifyWS, logger, authGPRC)).Methods("GET")
 
+	http.Handle("/metrics", promhttp.Handler())
+	http.Handle("/", middlewares.RecoverMiddleware(middlewares.AccessLogMiddleware(r, logger), logger))
+
 	logger.Infof("Bots HTTP service successfully started at port %d", httpPort)
-	err = http.ListenAndServe(":"+strconv.Itoa(httpPort),
-		middlewares.RecoverMiddleware(middlewares.AccessLogMiddleware(r, logger), logger))
+	err = http.ListenAndServe(":"+strconv.Itoa(httpPort), nil)
 	if err != nil {
 		logger.Errorf("cant start main server. err: %s", err.Error())
 		return

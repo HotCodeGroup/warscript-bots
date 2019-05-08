@@ -35,11 +35,11 @@ type AuthorInfo struct {
 }
 
 type Bot struct {
-	AuthorInfo
-	ID         int64  `json:"id"`
-	GameSlug   string `json:"game_slug"`
-	IsActive   bool   `json:"is_active"`
-	IsVerified bool   `json:"is_verified"`
+	Author     *AuthorInfo `json:"author"`
+	ID         int64       `json:"id"`
+	GameSlug   string      `json:"game_slug"`
+	IsActive   bool        `json:"is_active"`
+	IsVerified bool        `json:"is_verified"`
 }
 
 type BotFull struct {
