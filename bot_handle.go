@@ -220,11 +220,11 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 func OpenVerifyWS(w http.ResponseWriter, r *http.Request) {
 	logger := utils.GetLogger(r, logger, "GetBotsList")
 	errWriter := utils.NewErrorResponseWriter(w, logger)
-	info := SessionInfo(r)
-	if info == nil {
-		errWriter.WriteWarn(http.StatusUnauthorized, errors.New("session info is not presented"))
-		return
-	}
+	// info := SessionInfo(r)
+	// if info == nil {
+	// 	errWriter.WriteWarn(http.StatusUnauthorized, errors.New("session info is not presented"))
+	// 	return
+	// }
 
 	gameSlug := r.URL.Query().Get("game_slug")
 	upgrader := websocket.Upgrader{
@@ -241,7 +241,6 @@ func OpenVerifyWS(w http.ResponseWriter, r *http.Request) {
 	sessionID := uuid.New().String()
 	verifyClient := &BotVerifyClient{
 		SessionID: sessionID,
-		UserID:    info.ID,
 		//UserID:    1,
 		GameSlug: gameSlug,
 

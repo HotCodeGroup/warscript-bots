@@ -144,7 +144,7 @@ func main() {
 	r := mux.NewRouter().PathPrefix("/v1").Subrouter()
 	r.HandleFunc("/bots", middlewares.WithAuthentication(CreateBot, logger, authGPRC)).Methods("POST")
 	r.HandleFunc("/bots", GetBotsList).Methods("GET")
-	r.HandleFunc("/bots/verification", middlewares.WithAuthentication(OpenVerifyWS, logger, authGPRC)).Methods("GET")
+	r.HandleFunc("/bots/verification", OpenVerifyWS).Methods("GET")
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/", middlewares.RecoverMiddleware(middlewares.AccessLogMiddleware(r, logger), logger))
