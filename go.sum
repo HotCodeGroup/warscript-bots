@@ -1,5 +1,7 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/DATA-DOG/go-sqlmock v1.3.3 h1:CWUqKXe0s8A2z6qCgkP4Kru7wC11YoAnoupUKFDnH08=
+github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/HotCodeGroup/warscript-utils v0.0.0-20190503160451-f8235b431857 h1:jiuidGLH8QTAsGYRZIUza/LatQhOgNFc8YLf07uZBco=
 github.com/HotCodeGroup/warscript-utils v0.0.0-20190503160451-f8235b431857/go.mod h1:jlB2/oOpNLRnrFC4zEmsIP1793sEUWeujwLEu5cKtfU=
 github.com/HotCodeGroup/warscript-utils v0.0.0-20190503161944-93e911069855 h1:O10bgZe3yklySTOkNkjYpi0KIII+lTnP1yyU9GPb4RI=
