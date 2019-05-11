@@ -1,15 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"strconv"
 
 	"github.com/HotCodeGroup/warscript-utils/utils"
-	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
+
+	"github.com/lib/pq"
 )
 
-var pgxConn *pgx.ConnPool
+var pqConn *sql.DB
 
 // BotAccessObject DAO for Bot model
 type BotAccessObject interface {
@@ -23,6 +24,7 @@ type BotAccessObject interface {
 // AccessObject implementation of BotAccessObject
 type AccessObject struct{}
 
+// Bots объект для обращения с моделью bot
 var Bots BotAccessObject
 
 func init() {
@@ -31,21 +33,21 @@ func init() {
 
 // Bot mode for bots table
 type BotModel struct {
-	ID          pgtype.Int8
-	Code        pgtype.Text
-	Language    pgtype.Varchar
-	IsActive    pgtype.Bool
-	IsVerified  pgtype.Bool
-	AuthorID    pgtype.Int8
-	GameSlug    pgtype.Varchar
-	Score       pgtype.Int8
-	GamesPlayed pgtype.Int8
+	ID          int64
+	Code        string
+	Language    string
+	IsActive    bool
+	IsVerified  bool
+	AuthorID    int64
+	GameSlug    string
+	Score       int64
+	GamesPlayed int64
 }
 
 func (bd *AccessObject) Create(b *BotModel) error {
-	tx, err := pgxConn.Begin()
+	tx, err := pqConn.Begin()
 	if err != nil {
-		return errors.Wrap(err, "can not open bot create transaction")
+		return errors.Wrapf(utils.ErrInternal, "can not open bot create transaction: %s", err.Error())
 	}
 	//nolint: errcheck
 	defer tx.Rollback()
@@ -54,45 +56,47 @@ func (bd *AccessObject) Create(b *BotModel) error {
 	 	VALUES ($1, $2, $3, $4) RETURNING id`,
 		&b.Code, &b.Language, &b.AuthorID, &b.GameSlug)
 	if err = row.Scan(&b.ID); err != nil {
-		pgErr, ok := err.(pgx.PgError)
+		pgErr, ok := err.(pq.Error)
 		if !ok {
-			return errors.Wrap(err, "can not insert bot row")
+			return errors.Wrapf(utils.ErrInternal, "create bot row error: %v", err)
 		}
+
 		if pgErr.Code == "23505" {
-			return errors.Wrap(utils.ErrTaken, errors.Wrap(err, "code duplication").Error())
+			return errors.Wrapf(utils.ErrTaken, "code duplication: %v", err)
 		}
-		return errors.Wrap(pgErr, "can not insert bot row")
+
+		return errors.Wrapf(utils.ErrInternal, "create bot row error: %v", pgErr)
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return errors.Wrap(err, "can not commit bot create transaction")
+		return errors.Wrapf(utils.ErrInternal, "can not commit bot create transaction: %v", err)
 	}
 
 	return nil
 }
 
 func (bd *AccessObject) SetBotVerifiedByID(botID int64, isVerified bool) error {
-	row := pgxConn.QueryRow(`UPDATE bots SET is_verified = $1 
+	row := pqConn.QueryRow(`UPDATE bots SET is_verified = $1 
 									WHERE bots.id = $2 RETURNING bots.id;`, isVerified, botID)
 
 	var id int64
 	if err := row.Scan(&id); err != nil {
-		if err == pgx.ErrNoRows {
-			return errors.Wrap(utils.ErrNotExists, errors.Wrap(err, "now row to update").Error())
+		if err == sql.ErrNoRows {
+			return errors.Wrapf(utils.ErrNotExists, "now row to update: %v", err)
 		}
 
-		return errors.Wrap(err, "can not update bot row")
+		return errors.Wrapf(utils.ErrInternal, "can not update bot row: %v", err)
 	}
 
 	return nil
 }
 
 func (bd *AccessObject) SetBotScoreByID(botID int64, newScore int64) error {
-	_, err := pgxConn.Exec(`UPDATE bots SET score = $1 
+	_, err := pqConn.Exec(`UPDATE bots SET score = $1 
 									WHERE bots.id = $2;`, newScore, botID)
 	if err != nil {
-		return errors.Wrap(err, "can not update bot row")
+		return errors.Wrapf(utils.ErrInternal, "can not update bot row: %v", err)
 	}
 
 	return nil
@@ -120,9 +124,9 @@ func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string
 	}
 	query += " ORDER BY b.score DESC;"
 
-	rows, err := pgxConn.Query(query, args...)
+	rows, err := pqConn.Query(query, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "get bots by game slug and author id error")
+		return nil, errors.Wrapf(utils.ErrInternal, "get bots by game slug and author id error: %v", err)
 	}
 	defer rows.Close()
 
@@ -133,7 +137,7 @@ func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string
 			&bot.Language, &bot.IsActive, &bot.IsVerified,
 			&bot.AuthorID, &bot.GameSlug, &bot.Score, &bot.GamesPlayed)
 		if err != nil {
-			return nil, errors.Wrap(err, "get bots by game slug and author id scan bot error")
+			return nil, errors.Wrapf(utils.ErrInternal, "get bots by game slug and author id scan bot error: %v", err)
 		}
 		bots = append(bots, bot)
 	}
@@ -150,9 +154,9 @@ func (bd *AccessObject) GetBotsForTesting(N int64, game string) ([]*BotModel, er
 	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played
 	FROM bots b WHERE b.is_verified = true AND b.game_slug = $1 AND b.games_played = 0)`
 
-	rows, err := pgxConn.Query(query, game, N)
+	rows, err := pqConn.Query(query, game, N)
 	if err != nil {
-		return nil, errors.Wrap(err, "get bots for testing error")
+		return nil, errors.Wrapf(utils.ErrInternal, "get bots for testing error: %v", err)
 	}
 	defer rows.Close()
 
@@ -163,7 +167,7 @@ func (bd *AccessObject) GetBotsForTesting(N int64, game string) ([]*BotModel, er
 			&bot.Language, &bot.IsActive, &bot.IsVerified,
 			&bot.AuthorID, &bot.GameSlug, &bot.Score, &bot.GamesPlayed)
 		if err != nil {
-			return nil, errors.Wrap(err, "get bots for testing scan bot error")
+			return nil, errors.Wrapf(utils.ErrInternal, "get bots for testing scan bot error: %v", err)
 		}
 		bots = append(bots, bot)
 	}

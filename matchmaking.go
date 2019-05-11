@@ -38,10 +38,10 @@ func startMatchmaking() {
 				if bots[i].Language == bots[nextI].Language && bots[i].AuthorID != bots[nextI].AuthorID {
 					// делаем RPC запрос
 					events, err := sendForVerifyRPC(&TestTask{
-						Code1:    bots[i].Code.String,
-						Code2:    bots[nextI].Code.String,
+						Code1:    bots[i].Code,
+						Code2:    bots[nextI].Code,
 						GameSlug: gameSlug, // так как citext, то ориджинал слаг в gameInfo
-						Language: Lang(bots[i].Language.String),
+						Language: Lang(bots[i].Language),
 					})
 					if err != nil {
 						logger.Error(errors.Wrap(err, "failed to call testing rpc"))
@@ -66,11 +66,11 @@ func startMatchmaking() {
 
 func processTestingStatus(bot1, bot2 *BotModel,
 	broadcast chan<- *BotStatusMessage, events <-chan *TesterStatusQueue) {
-	gameSlug := bot1.GameSlug.String
+	gameSlug := bot1.GameSlug
 
 	logger := logger.WithFields(logrus.Fields{
-		"bot_id1": bot1.ID.Int,
-		"bot_id2": bot2.ID.Int,
+		"bot_id1": bot1.ID,
+		"bot_id2": bot2.ID,
 		"method":  "processTestingStatus",
 	})
 
@@ -87,22 +87,22 @@ func processTestingStatus(bot1, bot2 *BotModel,
 			}
 
 			body, _ := json.Marshal(&MatchStatus{
-				Bot1ID:    bot1.ID.Int,
-				Bot2ID:    bot2.ID.Int,
-				Author1ID: bot1.AuthorID.Int,
-				Author2ID: bot2.AuthorID.Int,
+				Bot1ID:    bot1.ID,
+				Bot2ID:    bot2.ID,
+				Author1ID: bot1.AuthorID,
+				Author2ID: bot2.AuthorID,
 				NewStatus: upd.NewStatus,
 			})
 
 			broadcast <- &BotStatusMessage{
-				AuthorID: bot1.AuthorID.Int,
+				AuthorID: bot1.AuthorID,
 				GameSlug: gameSlug,
 				Body:     body,
 				Type:     "match_status",
 			}
 
 			broadcast <- &BotStatusMessage{
-				AuthorID: bot2.AuthorID.Int,
+				AuthorID: bot2.AuthorID,
 				GameSlug: gameSlug,
 				Body:     body,
 				Type:     "match_status",
@@ -117,38 +117,38 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				continue
 			}
 
-			newScore1, newScore2 := newRatings(bot1.Score.Int, bot2.Score.Int, res.Winner)
+			newScore1, newScore2 := newRatings(bot1.Score, bot2.Score, res.Winner)
 
 			body, _ := json.Marshal(&MatchResult{
-				Bot1ID:    bot1.ID.Int,
-				Bot2ID:    bot2.ID.Int,
-				Author1ID: bot1.AuthorID.Int,
-				Author2ID: bot2.AuthorID.Int,
+				Bot1ID:    bot1.ID,
+				Bot2ID:    bot2.ID,
+				Author1ID: bot1.AuthorID,
+				Author2ID: bot2.AuthorID,
 				NewScore1: newScore1,
 				NewScore2: newScore2,
 				Winner:    res.Winner,
 			})
 
 			broadcast <- &BotStatusMessage{
-				AuthorID: bot1.AuthorID.Int,
+				AuthorID: bot1.AuthorID,
 				GameSlug: gameSlug,
 				Body:     body,
 				Type:     "match",
 			}
 
 			broadcast <- &BotStatusMessage{
-				AuthorID: bot2.AuthorID.Int,
+				AuthorID: bot2.AuthorID,
 				GameSlug: gameSlug,
 				Body:     body,
 				Type:     "match",
 			}
 
-			err = Bots.SetBotScoreByID(bot1.ID.Int, newScore1)
+			err = Bots.SetBotScoreByID(bot1.ID, newScore1)
 			if err != nil {
 				logger.Error(errors.Wrap(err, "can't update bot1 score"))
 				continue
 			}
-			err = Bots.SetBotScoreByID(bot2.ID.Int, newScore2)
+			err = Bots.SetBotScoreByID(bot2.ID, newScore2)
 			if err != nil {
 				logger.Error(errors.Wrap(err, "can't update bot2 score"))
 				continue
@@ -164,24 +164,24 @@ func processTestingStatus(bot1, bot2 *BotModel,
 			logger.Info(res.Error)
 
 			body, _ := json.Marshal(&MatchResult{
-				Bot1ID:    bot1.ID.Int,
-				Bot2ID:    bot2.ID.Int,
-				Author1ID: bot1.AuthorID.Int,
-				Author2ID: bot2.AuthorID.Int,
-				NewScore1: bot1.Score.Int,
-				NewScore2: bot2.Score.Int,
+				Bot1ID:    bot1.ID,
+				Bot2ID:    bot2.ID,
+				Author1ID: bot1.AuthorID,
+				Author2ID: bot2.AuthorID,
+				NewScore1: bot1.Score,
+				NewScore2: bot2.Score,
 				Winner:    -1,
 			})
 
 			broadcast <- &BotStatusMessage{
-				AuthorID: bot1.AuthorID.Int,
+				AuthorID: bot1.AuthorID,
 				GameSlug: gameSlug,
 				Body:     body,
 				Type:     "match_error",
 			}
 
 			broadcast <- &BotStatusMessage{
-				AuthorID: bot2.AuthorID.Int,
+				AuthorID: bot2.AuthorID,
 				GameSlug: gameSlug,
 				Body:     body,
 				Type:     "match_error",

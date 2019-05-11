@@ -72,13 +72,13 @@ func main() {
 		return
 	}
 
-	pgxConn, err = postgresql.Connect(postgreConf.Data["user"].(string), postgreConf.Data["pass"].(string),
+	pqConn, err = postgresql.Connect(postgreConf.Data["user"].(string), postgreConf.Data["pass"].(string),
 		postgreConf.Data["host"].(string), postgreConf.Data["port"].(string), postgreConf.Data["database"].(string))
 	if err != nil {
 		logger.Errorf("can not connect to postgresql database: %s", err.Error())
 		return
 	}
-	defer pgxConn.Close()
+	defer pqConn.Close()
 
 	// получаем конфиг на rabbit и стартуем
 	rabbitConf, err := vault.Logical().Read("warscript-bots/rabbitmq")

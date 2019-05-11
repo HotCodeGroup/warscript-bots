@@ -9,7 +9,6 @@ import (
 	"github.com/HotCodeGroup/warscript-utils/utils"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
 )
 
@@ -68,10 +67,10 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 	}
 
 	bot := &BotModel{
-		Code:     pgtype.Text{String: form.Code, Status: pgtype.Present},
-		Language: pgtype.Varchar{String: string(form.Language), Status: pgtype.Present},
-		GameSlug: pgtype.Varchar{String: gameInfo.Slug, Status: pgtype.Present},
-		AuthorID: pgtype.Int8{Int: userInfo.ID, Status: pgtype.Present},
+		Code:     form.Code,
+		Language: string(form.Language),
+		GameSlug: gameInfo.Slug,
+		AuthorID: userInfo.ID,
 	}
 
 	if err = Bots.Create(bot); err != nil {
@@ -94,11 +93,11 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 				PhotoUUID: userInfo.PhotoUUID,
 				Active:    userInfo.Active,
 			},
-			ID:         bot.ID.Int,
-			IsActive:   bot.IsActive.Bool,
-			IsVerified: bot.IsVerified.Bool,
-			GameSlug:   bot.GameSlug.String,
-			Score:      bot.Score.Int,
+			ID:         bot.ID,
+			IsActive:   bot.IsActive,
+			IsVerified: bot.IsVerified,
+			GameSlug:   bot.GameSlug,
+			Score:      bot.Score,
 		},
 		Code:     form.Code,
 		Language: form.Language,
@@ -116,7 +115,7 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// запускаем обработчик ответа RPC
-	go processVerifyingStatus(bot.ID.Int, info.ID, bot.GameSlug.String, h.broadcast, events)
+	go processVerifyingStatus(bot.ID, info.ID, bot.GameSlug, h.broadcast, events)
 	utils.WriteApplicationJSON(w, http.StatusOK, botFull)
 }
 
@@ -158,7 +157,7 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 		// фомируем массив из всех айдишников авторов ботов
 		userIDsSet := make(map[int64]struct{})
 		for _, bot := range bots {
-			userIDsSet[bot.AuthorID.Int] = struct{}{}
+			userIDsSet[bot.AuthorID] = struct{}{}
 		}
 		userIDsM := &models.UserIDs{
 			IDs: make([]*models.UserID, 0, len(userIDsSet)),
@@ -194,7 +193,7 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 				Active:    userInfo.Active,
 			}
 		} else {
-			if protUser, ok := authorsSet[bot.AuthorID.Int]; ok {
+			if protUser, ok := authorsSet[bot.AuthorID]; ok {
 				ai = &AuthorInfo{
 					ID:        protUser.ID,
 					Username:  protUser.Username,
@@ -206,11 +205,11 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 
 		respBots[i] = &Bot{
 			Author:     ai,
-			ID:         bot.ID.Int,
-			GameSlug:   bot.GameSlug.String,
-			IsActive:   bot.IsActive.Bool,
-			IsVerified: bot.IsVerified.Bool,
-			Score:      bot.Score.Int,
+			ID:         bot.ID,
+			GameSlug:   bot.GameSlug,
+			IsActive:   bot.IsActive,
+			IsVerified: bot.IsVerified,
+			Score:      bot.Score,
 		}
 	}
 
