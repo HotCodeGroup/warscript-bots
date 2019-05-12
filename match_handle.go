@@ -116,16 +116,16 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 
 	if authenticated {
 		if resp.Author1 != nil && session.ID == resp.Author1.ID {
-			bot, err := Bots.GetBotByID(resp.Author1.ID)
+			bot, err := Bots.GetBotByID(resp.Bot1ID)
 			if err != nil {
-				logger.Errorf("can't get bot by id")
+				logger.Errorf("can't get bot by id: %v", err)
 			} else {
 				resp.Code = bot.Code
 			}
 		} else if resp.Author2 != nil && session.ID == resp.Author2.ID {
-			bot, err := Bots.GetBotByID(resp.Author2.ID)
+			bot, err := Bots.GetBotByID(resp.Bot2ID)
 			if err != nil {
-				logger.Errorf("can't get bot by id")
+				logger.Errorf("can't get bot by id: %v", err)
 			} else {
 				resp.Code = bot.Code
 			}
