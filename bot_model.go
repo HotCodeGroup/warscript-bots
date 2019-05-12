@@ -15,6 +15,7 @@ type BotAccessObject interface {
 	Create(b *BotModel) error
 	SetBotVerifiedByID(botID int64, isActive bool) error
 	SetBotScoreByID(botID int64, newScore int64) error
+	GetBotByID(botID int64) (*BotModel, error)
 	GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error)
 	GetBotsForTesting(N int64, game string) ([]*BotModel, error)
 }
@@ -98,6 +99,26 @@ func (bd *AccessObject) SetBotScoreByID(botID int64, newScore int64) error {
 	}
 
 	return nil
+}
+
+func (bd *AccessObject) GetBotByID(botID int64) (*BotModel, error) {
+	row := pqConn.QueryRow(`SELECT b.id, b.code, b.language,
+	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played 
+	FROM bots b WHERE b.id=$1`, botID)
+
+	bot := &BotModel{}
+	err := row.Scan(&bot.ID, &bot.Code,
+		&bot.Language, &bot.IsActive, &bot.IsVerified,
+		&bot.AuthorID, &bot.GameSlug, &bot.Score, &bot.GamesPlayed)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.Wrapf(utils.ErrNotExists, "bot with this id does not exist: %v", err)
+		}
+
+		return nil, errors.Wrapf(utils.ErrInternal, "can not get bot by id: %v", err)
+	}
+
+	return bot, nil
 }
 
 func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error) {
