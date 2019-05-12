@@ -137,7 +137,7 @@ func (o *MatchObject) GetMatchesByGameSlugAndAuthorID(authorID int64, gameSlug s
 		query += strconv.Itoa(len(args) + 1)
 		args = append(args, gameSlug)
 	}
-	query += " ORDER BY m.time DESC;"
+	query += " ORDER BY m.id DESC;"
 
 	rows, err := pqConn.Query(query, args...)
 	if err != nil {
