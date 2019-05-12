@@ -50,9 +50,9 @@ func (h *hub) run() {
 		case client := <-h.unregister:
 			h.unregisterClient(client)
 		case message := <-h.broadcast:
-			// для тех, кто слушает какую-то одну игру
-
 			if _, ok := h.sessions[message.AuthorID]; ok {
+				// для тех, кто слушает какого-то одного автора + игру
+
 				for _, send := range h.sessions[message.AuthorID][message.GameSlug] {
 					send <- message
 				}
@@ -64,6 +64,7 @@ func (h *hub) run() {
 			}
 
 			if _, ok := h.sessions[0]; ok {
+				// для тех, кто слушает игру
 				for _, send := range h.sessions[0][message.GameSlug] {
 					send <- message
 				}

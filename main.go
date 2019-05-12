@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -30,6 +31,8 @@ var (
 	authGPRC  models.AuthClient
 
 	rabbitChannel *amqp.Channel
+
+	pqConn *sql.DB
 )
 
 func main() {

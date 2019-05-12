@@ -10,8 +10,6 @@ import (
 	"github.com/lib/pq"
 )
 
-var pqConn *sql.DB
-
 // BotAccessObject DAO for Bot model
 type BotAccessObject interface {
 	Create(b *BotModel) error
