@@ -6,7 +6,7 @@ CREATE TABLE "matches"
 	id BIGSERIAL NOT NULL
 		CONSTRAINT match_pk
 			PRIMARY KEY,
-			
+
 	game_slug citext CONSTRAINT game_slug_empty NOT NULL CHECK ( game_slug <> '' ),
 	states BYTEA,
 	error TEXT,
@@ -19,10 +19,10 @@ CREATE TABLE "matches"
 	log_1 BYTEA,
 	diff_1 BIGINT NOT NULL,
 
-	bot_2 BIGINT NOT NULL REFERENCES bots (id) ON DELETE NO ACTION,
-	author_2 BIGINT NOT NULL,
+	bot_2 BIGINT REFERENCES bots (id) ON DELETE NO ACTION,
+	author_2 BIGINT,
 	log_2 BYTEA,
-	diff_2 BIGINT NOT NULL
+	diff_2 BIGINT
 );
 
 ALTER TABLE matches OWNER TO warscript_bots_user;

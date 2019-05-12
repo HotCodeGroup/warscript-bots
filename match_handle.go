@@ -49,7 +49,7 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 		errWriter.WriteWarn(http.StatusNotFound, errors.Wrap(err, "can't get users by grpc"))
 	}
 
-	// alert: govnocodec
+	// FIXME:
 	var ai1 *AuthorInfo
 	var ai2 *AuthorInfo
 	if len(users.Users) > 0 {
@@ -68,7 +68,9 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 				Active:    users.Users[0].Active,
 			}
 		}
-	} else if len(users.Users) > 1 {
+	}
+
+	if len(users.Users) > 1 {
 		if users.Users[1].ID == matchInfo.Author1 {
 			ai1 = &AuthorInfo{
 				ID:        users.Users[1].ID,
@@ -113,14 +115,14 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authenticated {
-		if session.ID == resp.Author1.ID {
+		if resp.Author1 != nil && session.ID == resp.Author1.ID {
 			bot, err := Bots.GetBotByID(resp.Author1.ID)
 			if err != nil {
 				logger.Errorf("can't get bot by id")
 			} else {
 				resp.Code = bot.Code
 			}
-		} else if session.ID == resp.Author2.ID {
+		} else if resp.Author2 != nil && session.ID == resp.Author2.ID {
 			bot, err := Bots.GetBotByID(resp.Author2.ID)
 			if err != nil {
 				logger.Errorf("can't get bot by id")
