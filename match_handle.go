@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -49,7 +50,6 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 		errWriter.WriteWarn(http.StatusNotFound, errors.Wrap(err, "can't get users by grpc"))
 	}
 
-	// FIXME:
 	var ai1 *AuthorInfo
 	var ai2 *AuthorInfo
 	if len(users.Users) > 0 {
@@ -140,8 +140,20 @@ func GetMatchList(w http.ResponseWriter, r *http.Request) {
 	logger := utils.GetLogger(r, logger, "GetMatchList")
 	errWriter := utils.NewErrorResponseWriter(w, logger)
 
+	limitS := r.URL.Query().Get("limit")
+	sinceS := r.URL.Query().Get("since")
+
+	limit, err := strconv.ParseInt(limitS, 10, 64)
+	if err != nil {
+		limit = 10
+	}
+	since, err := strconv.ParseInt(sinceS, 10, 64)
+	if err != nil {
+		since = math.MaxInt64
+	}
+
 	gameSlug := r.URL.Query().Get("game_slug")
-	matches, err := Matches.GetMatchesByGameSlugAndAuthorID(-1, gameSlug)
+	matches, err := Matches.GetMatchesByGameSlugAndAuthorID(-1, gameSlug, limit, since)
 	if err != nil {
 		errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "get bot method error"))
 		return
