@@ -105,3 +105,17 @@ type MatchInfo struct {
 	Author1  *AuthorInfo `json:"author_1"`
 	Author2  *AuthorInfo `json:"author_2"`
 }
+
+type NotifyMatchMessage struct {
+	BotID    int64  `json:"bot_id"`
+	GameSlug string `json:"game_slug"`
+	MatchID  int64  `json:"match_id"`
+	Diff     int64  `json:"diff"`
+}
+
+type NotifyVerifyMessage struct {
+	BotID    int64  `json:"bot_id"`
+	GameSlug string `json:"game_slug"`
+	MatchID  int64  `json:"match_id"`
+	Veryfied bool   `json:"veryfied"`
+}

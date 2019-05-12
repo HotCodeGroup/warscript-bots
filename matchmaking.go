@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
 	"math"
 	"sync"
 	"time"
 
+	"github.com/HotCodeGroup/warscript-utils/models"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -153,6 +156,69 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				logger.Error(errors.Wrap(err, "can't update bot2 score"))
 				continue
 			}
+
+			m := &MatchModel{
+				States:   res.States,
+				Result:   res.Winner,
+				GameSlug: gameSlug,
+
+				Bot1:    bot1.ID,
+				Author1: bot1.AuthorID,
+				Diff1:   newScore1 - bot1.Score,
+
+				Bot2:    sql.NullInt64{Int64: bot2.ID, Valid: true},
+				Author2: sql.NullInt64{Int64: bot2.AuthorID, Valid: true},
+				Diff2:   sql.NullInt64{Int64: newScore2 - bot2.Score, Valid: true},
+			}
+			err = Matches.Create(m)
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not save match"))
+				continue
+			}
+
+			body1, err := json.Marshal(&NotifyMatchMessage{
+				BotID:    bot1.ID,
+				GameSlug: gameSlug,
+				MatchID:  m.ID,
+				Diff:     newScore1 - bot1.Score,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not marshal body user1"))
+				continue
+			}
+
+			_, err = notifyGRPC.SendNotify(context.Background(), &models.Message{
+				Type: "match",
+				User: bot1.AuthorID,
+				Game: gameSlug,
+				Body: body1,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can send notify to user1"))
+				continue
+			}
+
+			body2, err := json.Marshal(&NotifyMatchMessage{
+				BotID:    bot2.ID,
+				GameSlug: gameSlug,
+				MatchID:  m.ID,
+				Diff:     newScore2 - bot2.Score,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not marshal body user2"))
+				continue
+			}
+			_, err = notifyGRPC.SendNotify(context.Background(), &models.Message{
+				Type: "match",
+				User: bot2.AuthorID,
+				Game: gameSlug,
+				Body: body2,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can send notify to user1"))
+				continue
+			}
+
 		case "error":
 			res := &TesterStatusError{}
 			err := json.Unmarshal(event.Body, res)
@@ -186,6 +252,25 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				Body:     body,
 				Type:     "match_error",
 			}
+
+			err = Matches.Create(&MatchModel{
+				Result:   3,
+				Error:    sql.NullString{String: res.Error, Valid: true},
+				GameSlug: gameSlug,
+
+				Bot1:    bot1.ID,
+				Author1: bot1.AuthorID,
+				Diff1:   0,
+
+				Bot2:    sql.NullInt64{Int64: bot2.ID, Valid: true},
+				Author2: sql.NullInt64{Int64: bot2.AuthorID, Valid: true},
+				Diff2:   sql.NullInt64{Int64: 0, Valid: true},
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not save match"))
+				continue
+			}
+
 		default:
 			logger.Error(errors.New("can not process unknown status type"))
 		}

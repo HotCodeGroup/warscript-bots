@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
 
+	"github.com/HotCodeGroup/warscript-utils/models"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
@@ -193,6 +196,42 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				}
 			}
 
+			m := &MatchModel{
+				States:   res.States,
+				Result:   res.Winner,
+				GameSlug: gameSlug,
+				Bot1:     botID,
+				Author1:  authorID,
+				Diff1:    400,
+			}
+			err = Matches.Create(m)
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not save match"))
+				continue
+			}
+
+			body1, err := json.Marshal(&NotifyVerifyMessage{
+				BotID:    botID,
+				GameSlug: gameSlug,
+				MatchID:  m.ID,
+				Veryfied: res.Winner == 1 || res.Winner == 0,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not marshal body user1"))
+				continue
+			}
+
+			_, err = notifyGRPC.SendNotify(context.Background(), &models.Message{
+				Type: "verify",
+				User: authorID,
+				Game: gameSlug,
+				Body: body1,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can send notify to user1"))
+				continue
+			}
+
 			status = newStatus
 		case "error":
 			res := &TesterStatusError{}
@@ -220,6 +259,42 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 			err = Bots.SetBotVerifiedByID(botID, false)
 			if err != nil {
 				logger.Error(errors.Wrap(err, "can update bot active status"))
+				continue
+			}
+
+			m := &MatchModel{
+				Result:   3, // код: ошибка
+				GameSlug: gameSlug,
+				Bot1:     botID,
+				Author1:  authorID,
+				Diff1:    0,
+				Error:    sql.NullString{String: res.Error, Valid: true},
+			}
+			err = Matches.Create(m)
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not save match"))
+				continue
+			}
+
+			body1, err := json.Marshal(&NotifyVerifyMessage{
+				BotID:    botID,
+				GameSlug: gameSlug,
+				MatchID:  m.ID,
+				Veryfied: false,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not marshal body user1"))
+				continue
+			}
+
+			_, err = notifyGRPC.SendNotify(context.Background(), &models.Message{
+				Type: "verify",
+				User: authorID,
+				Game: gameSlug,
+				Body: body1,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can send notify to user1"))
 				continue
 			}
 

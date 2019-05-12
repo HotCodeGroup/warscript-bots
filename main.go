@@ -26,9 +26,10 @@ import (
 )
 
 var (
-	logger    *logrus.Logger
-	gamesGPRC models.GamesClient
-	authGPRC  models.AuthClient
+	logger     *logrus.Logger
+	gamesGPRC  models.GamesClient
+	authGPRC   models.AuthClient
+	notifyGRPC models.NotifyClient
 
 	rabbitChannel *amqp.Channel
 
@@ -135,6 +136,14 @@ func main() {
 	}
 	defer gamesGPRCConn.Close()
 	gamesGPRC = models.NewGamesClient(gamesGPRCConn)
+
+	notifyGRPCConn, err := balancer.ConnectClient(consul, "warscript-notify-grpc")
+	if err != nil {
+		logger.Errorf("can not connect to notify grpc: %s", err.Error())
+		return
+	}
+	defer notifyGRPCConn.Close()
+	notifyGRPC = models.NewNotifyClient(notifyGRPCConn)
 
 	h = &hub{
 		sessions:   make(map[int64]map[string]map[string]chan *BotStatusMessage),
