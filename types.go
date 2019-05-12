@@ -91,3 +91,11 @@ type MatchFullInfo struct {
 	GameSlug  string
 	Bot1ID    int64
 }
+
+type MatchInfo struct {
+	ID       int64       `json:"id"`
+	Result   int         `json:"result"`
+	GameSlug string      `json:"game_slug"`
+	Author1  *AuthorInfo `json:"author_1"`
+	Author2  *AuthorInfo `json:"author_2"`
+}
