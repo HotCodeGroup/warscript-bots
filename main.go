@@ -150,6 +150,7 @@ func main() {
 	r.HandleFunc("/bots/verification", OpenVerifyWS).Methods("GET")
 
 	r.HandleFunc("/matches", GetMatchList).Methods("GET")
+	r.HandleFunc("/matches/{match_id:[0-9]+}", GetMatch).Methods("GET")
 
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/", middlewares.RecoverMiddleware(middlewares.AccessLogMiddleware(r, logger), logger))
