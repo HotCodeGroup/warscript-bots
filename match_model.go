@@ -38,10 +38,10 @@ type MatchModel struct {
 	Author1   int64
 	Log1      []byte
 	Diff1     int64
-	Bot2      int64
-	Author2   int64
+	Bot2      sql.NullInt64
+	Author2   sql.NullInt64
 	Log2      []byte
-	Diff2     int64
+	Diff2     sql.NullInt64
 }
 
 func (m *MatchModel) GetError() string {
@@ -50,6 +50,30 @@ func (m *MatchModel) GetError() string {
 	}
 
 	return ""
+}
+
+func (m *MatchModel) GetBot2() int64 {
+	if m.Bot2.Valid {
+		return m.Bot2.Int64
+	}
+
+	return 0
+}
+
+func (m *MatchModel) GetAuthor2() int64 {
+	if m.Author2.Valid {
+		return m.Author2.Int64
+	}
+
+	return 0
+}
+
+func (m *MatchModel) GetDiff2() int64 {
+	if m.Diff2.Valid {
+		return m.Diff2.Int64
+	}
+
+	return 0
 }
 
 func (o *MatchObject) Create(m *MatchModel) error {

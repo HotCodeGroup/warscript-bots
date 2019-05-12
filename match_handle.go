@@ -33,11 +33,17 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ids := []*models.UserID{
+		&models.UserID{ID: matchInfo.Author1},
+	}
+
+	// второй игрок может быть нашим ботом
+	if matchInfo.Author2.Valid {
+		ids = append(ids, &models.UserID{ID: matchInfo.Author2.Int64})
+	}
+
 	users, err := authGPRC.GetUsersByIDs(context.Background(), &models.UserIDs{
-		IDs: []*models.UserID{
-			&models.UserID{ID: matchInfo.Author1},
-			&models.UserID{ID: matchInfo.Author2},
-		},
+		IDs: ids,
 	})
 	if err != nil {
 		errWriter.WriteWarn(http.StatusNotFound, errors.Wrap(err, "can't get users by grpc"))
@@ -54,7 +60,7 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 				PhotoUUID: users.Users[0].PhotoUUID,
 				Active:    users.Users[0].Active,
 			}
-		} else if users.Users[0].ID == matchInfo.Author2 {
+		} else if matchInfo.Author2.Valid && users.Users[0].ID == matchInfo.Author2.Int64 {
 			ai2 = &AuthorInfo{
 				ID:        users.Users[0].ID,
 				Username:  users.Users[0].Username,
@@ -70,7 +76,7 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 				PhotoUUID: users.Users[1].PhotoUUID,
 				Active:    users.Users[1].Active,
 			}
-		} else if users.Users[1].ID == matchInfo.Author2 {
+		} else if matchInfo.Author2.Valid && users.Users[1].ID == matchInfo.Author2.Int64 {
 			ai2 = &AuthorInfo{
 				ID:        users.Users[1].ID,
 				Username:  users.Users[1].Username,
@@ -86,11 +92,11 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 		Error:     matchInfo.GetError(),
 		Result:    matchInfo.Result,
 		Diff1:     matchInfo.Diff1,
-		Diff2:     matchInfo.Diff2,
+		Diff2:     matchInfo.GetDiff2(),
 		Timestamp: matchInfo.Timestamp,
 		GameSlug:  matchInfo.GameSlug,
 		Bot1ID:    matchInfo.Bot1,
-		Bot2ID:    matchInfo.Bot2,
+		Bot2ID:    matchInfo.GetBot2(),
 		Author1:   ai1,
 		Author2:   ai2,
 	}
@@ -145,7 +151,9 @@ func GetMatchList(w http.ResponseWriter, r *http.Request) {
 	userIDsSet := make(map[int64]struct{})
 	for _, match := range matches {
 		userIDsSet[match.Author1] = struct{}{}
-		userIDsSet[match.Author2] = struct{}{}
+		if match.Author2.Valid {
+			userIDsSet[match.Author2.Int64] = struct{}{}
+		}
 	}
 	userIDsM := &models.UserIDs{
 		IDs: make([]*models.UserID, 0, len(userIDsSet)),
@@ -182,7 +190,7 @@ func GetMatchList(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if protUser, ok := authorsSet[match.Author2]; ok {
+		if protUser, ok := authorsSet[match.Author2.Int64]; match.Author2.Valid && ok {
 			ai2 = &AuthorInfo{
 				ID:        protUser.ID,
 				Username:  protUser.Username,
