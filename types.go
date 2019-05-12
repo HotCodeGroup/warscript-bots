@@ -83,17 +83,17 @@ type MatchResult struct {
 }
 
 type MatchFullInfo struct {
-	ID        int64
-	States    json.RawMessage
-	Error     string
-	Result    int
-	Diff1     int64
-	Diff2     int64
-	Timestamp time.Time
-	GameSlug  string
-	Bot1ID    int64
-	Bot2ID    int64
-	User1     AuthorInfo
-	User2     AuthorInfo
-	Code      string
+	ID        int64           `json:"id"`
+	States    json.RawMessage `json:"states"`
+	Error     string          `json:"error"`
+	Result    int             `json:"result"`
+	Diff1     int64           `json:"diff1"`
+	Diff2     int64           `json:"diff2"`
+	Timestamp time.Time       `json:"timestamp"`
+	GameSlug  string          `json:"game_slug"`
+	Bot1ID    int64           `json:"bot1_id"`
+	Bot2ID    int64           `json:"bot2_id"`
+	User1     AuthorInfo      `json:"user1"`
+	User2     AuthorInfo      `json:"user2"`
+	Code      string          `json:"code"`
 }
