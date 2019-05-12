@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/HotCodeGroup/warscript-utils/utils"
 )
@@ -79,4 +80,14 @@ type MatchResult struct {
 	NewScore1 int64 `json:"new_score1"`
 	NewScore2 int64 `json:"new_score2"`
 	Winner    int   `json:"winner"`
+}
+
+type MatchFullInfo struct {
+	ID        int64
+	States    json.RawMessage
+	Error     string
+	Result    int
+	Timestamp time.Time
+	GameSlug  string
+	Bot1ID    int64
 }
