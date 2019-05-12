@@ -87,7 +87,13 @@ type MatchFullInfo struct {
 	States    json.RawMessage
 	Error     string
 	Result    int
+	Diff1     int64
+	Diff2     int64
 	Timestamp time.Time
 	GameSlug  string
 	Bot1ID    int64
+	Bot2ID    int64
+	User1     AuthorInfo
+	User2     AuthorInfo
+	Code      string
 }

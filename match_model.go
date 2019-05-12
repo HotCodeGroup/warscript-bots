@@ -44,6 +44,14 @@ type MatchModel struct {
 	Diff2     int64
 }
 
+func (m *MatchModel) GetError() string {
+	if m.Error.Valid {
+		return m.Error.String
+	}
+
+	return ""
+}
+
 func (o *MatchObject) Create(m *MatchModel) error {
 	tx, err := pqConn.Begin()
 	if err != nil {
