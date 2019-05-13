@@ -46,8 +46,9 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 	users, err := authGPRC.GetUsersByIDs(context.Background(), &models.UserIDs{
 		IDs: ids,
 	})
-	if err != nil {
+	if err != nil || users == nil {
 		errWriter.WriteWarn(http.StatusNotFound, errors.Wrap(err, "can't get users by grpc"))
+		return
 	}
 
 	var ai1 *AuthorInfo
@@ -103,18 +104,16 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 		Author2:   ai2,
 	}
 
-	authenticated := true
+	var session *models.SessionPayload
 	cookie, err := r.Cookie("JSESSIONID")
-	if err != nil || cookie == nil {
-		authenticated = false
+	if err == nil || cookie != nil {
+		session, err = authGPRC.GetSessionInfo(r.Context(), &models.SessionToken{Token: cookie.Value})
+		if err != nil {
+			logger.Warnf("can't get session by token: %v", err)
+		}
 	}
 
-	session, err := authGPRC.GetSessionInfo(r.Context(), &models.SessionToken{Token: cookie.Value})
-	if err != nil {
-		authenticated = false
-	}
-
-	if authenticated {
+	if session != nil {
 		if resp.Author1 != nil && session.ID == resp.Author1.ID {
 			bot, err := Bots.GetBotByID(resp.Bot1ID)
 			if err != nil {
