@@ -13,7 +13,7 @@ import (
 type MatchAccessObject interface {
 	Create(b *MatchModel) error
 	GetMatchByID(matchID int64) (*MatchModel, error)
-	GetMatchesByGameSlugAndAuthorID(authorID int64, gameSlug string) ([]*MatchModel, error)
+	GetMatchesByGameSlugAndAuthorID(authorID int64, gameSlug string, limit int64, since int64) ([]*MatchModel, error)
 }
 
 // AccessObject implementation of BotAccessObject
@@ -119,26 +119,26 @@ func (o *MatchObject) GetMatchByID(matchID int64) (*MatchModel, error) {
 	return m, nil
 }
 
-func (o *MatchObject) GetMatchesByGameSlugAndAuthorID(authorID int64, gameSlug string) ([]*MatchModel, error) {
-	args := []interface{}{}
+func (o *MatchObject) GetMatchesByGameSlugAndAuthorID(authorID int64, gameSlug string, limit int64, since int64) ([]*MatchModel, error) {
+	args := []interface{}{since}
+
 	query := `SELECT m.id, m.game_slug, m.states, m.error, m.result, m.time, m.bot_1, m.author_1,
-       m.log_1, m.diff_1, m.bot_2, m.author_2, m.log_2, m.diff_2 FROM matches m`
+       m.log_1, m.diff_1, m.bot_2, m.author_2, m.log_2, m.diff_2 FROM matches m WHERE m.id < $1`
 	if authorID > 0 {
-		query += ` WHERE (m.author_1 = $1 OR m.author_2 = $1)`
+		query += ` AND (m.author_1 = $2 OR m.author_2 = $2)`
 		args = append(args, authorID)
 	}
 
 	if gameSlug != "" {
-		if len(args) == 0 {
-			query += ` WHERE`
-		} else {
-			query += ` AND`
-		}
-		query += ` m.game_slug = $`
+		query += ` AND m.game_slug = $`
 		query += strconv.Itoa(len(args) + 1)
 		args = append(args, gameSlug)
 	}
-	query += " ORDER BY m.id DESC;"
+	query += " ORDER BY m.id DESC LIMIT $"
+	query += strconv.Itoa(len(args) + 1)
+	args = append(args, limit)
+
+	query += ";"
 
 	rows, err := pqConn.Query(query, args...)
 	if err != nil {
