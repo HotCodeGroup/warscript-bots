@@ -99,7 +99,11 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 			Author1:  ai1,
 			Author2:  ai2,
 		},
-		States:    matchInfo.States,
+		Replay: &Replay{
+			Info:   matchInfo.Info,
+			States: matchInfo.States,
+			Winner: matchInfo.Result,
+		},
 		Error:     matchInfo.GetError(),
 		Timestamp: matchInfo.Timestamp,
 		Bot1ID:    matchInfo.Bot1,

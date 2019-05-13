@@ -31,8 +31,9 @@ type TesterStatusError struct {
 }
 
 type TesterStatusResult struct {
-	Winner int             `json:"result"`
+	Info   json.RawMessage `json:"info"`
 	States json.RawMessage `json:"states"`
+	Winner int             `json:"result"`
 }
 
 type TestTask struct {
@@ -197,6 +198,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 			}
 
 			m := &MatchModel{
+				Info:     res.Info,
 				States:   res.States,
 				Result:   res.Winner,
 				GameSlug: gameSlug,

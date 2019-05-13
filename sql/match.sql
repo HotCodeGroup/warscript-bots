@@ -8,6 +8,7 @@ CREATE TABLE "matches"
 			PRIMARY KEY,
 
 	game_slug citext CONSTRAINT game_slug_empty NOT NULL CHECK ( game_slug <> '' ),
+	info BYTEA,
 	states BYTEA,
 	error TEXT,
 	result INTEGER NOT NULL,

@@ -92,14 +92,20 @@ type MatchInfo struct {
 	Diff2    int64       `json:"diff2"`
 }
 
+type Replay struct {
+	Info   json.RawMessage `json:"info"`
+	States json.RawMessage `json:"states"`
+	Winner int             `json:"winner"`
+}
+
 type MatchFullInfo struct {
 	MatchInfo
-	States    json.RawMessage `json:"states"`
-	Error     string          `json:"error"`
-	Timestamp time.Time       `json:"timestamp"`
-	Bot1ID    int64           `json:"bot1_id"`
-	Bot2ID    int64           `json:"bot2_id"`
-	Code      string          `json:"code"`
+	Replay    *Replay   `json:"replay"`
+	Error     string    `json:"error"`
+	Timestamp time.Time `json:"timestamp"`
+	Bot1ID    int64     `json:"bot1_id"`
+	Bot2ID    int64     `json:"bot2_id"`
+	Code      string    `json:"code"`
 }
 
 type NotifyMatchMessage struct {

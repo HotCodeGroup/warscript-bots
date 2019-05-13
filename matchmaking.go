@@ -158,6 +158,7 @@ func processTestingStatus(bot1, bot2 *BotModel,
 			}
 
 			m := &MatchModel{
+				Info:     res.Info,
 				States:   res.States,
 				Result:   res.Winner,
 				GameSlug: gameSlug,
