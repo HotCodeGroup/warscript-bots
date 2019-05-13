@@ -90,18 +90,20 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := MatchFullInfo{
-		ID:        matchInfo.ID,
+		MatchInfo: MatchInfo{
+			ID:       matchInfo.ID,
+			Result:   matchInfo.Result,
+			GameSlug: matchInfo.GameSlug,
+			Diff1:    matchInfo.Diff1,
+			Diff2:    matchInfo.GetDiff2(),
+			Author1:  ai1,
+			Author2:  ai2,
+		},
 		States:    matchInfo.States,
 		Error:     matchInfo.GetError(),
-		Result:    matchInfo.Result,
-		Diff1:     matchInfo.Diff1,
-		Diff2:     matchInfo.GetDiff2(),
 		Timestamp: matchInfo.Timestamp,
-		GameSlug:  matchInfo.GameSlug,
 		Bot1ID:    matchInfo.Bot1,
 		Bot2ID:    matchInfo.GetBot2(),
-		Author1:   ai1,
-		Author2:   ai2,
 	}
 
 	var session *models.SessionPayload
@@ -216,6 +218,8 @@ func GetMatchList(w http.ResponseWriter, r *http.Request) {
 			ID:       match.ID,
 			Result:   match.Result,
 			GameSlug: match.GameSlug,
+			Diff1:    match.Diff1,
+			Diff2:    match.GetDiff2(),
 			Author1:  ai1,
 			Author2:  ai2,
 		}
