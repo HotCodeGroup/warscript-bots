@@ -84,6 +84,7 @@ func (o *MatchObject) Create(m *MatchModel) error {
 	//nolint: errcheck
 	defer tx.Rollback()
 
+	m.Timestamp = time.Now()
 	row := tx.QueryRow(`INSERT INTO matches (game_slug, states, error, result, time, bot_1, author_1, log_1, diff_1, bot_2, author_2, log_2, diff_2)
 	 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id, time`,
 		&m.GameSlug, &m.States, &m.Error, &m.Result, &m.Timestamp, &m.Bot1,
