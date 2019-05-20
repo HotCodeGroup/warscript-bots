@@ -7,8 +7,10 @@ import (
 	"github.com/HotCodeGroup/warscript-utils/utils"
 )
 
+// Lang по сути ENUM с доступными языками
 type Lang string
 
+// BotUpload структура от front для загрузки бота на сервер
 type BotUpload struct {
 	Code     string `json:"code"`
 	GameSlug string `json:"game_slug"`
@@ -20,6 +22,7 @@ var availableLanguages = map[Lang]struct{}{
 	"JS": {},
 }
 
+// Validate проверка полей входящего бота, на соответствие требованиям
 func (bu *BotUpload) Validate() error {
 	if _, ok := availableLanguages[bu.Language]; !ok {
 		return &utils.ValidationError{
@@ -30,6 +33,7 @@ func (bu *BotUpload) Validate() error {
 	return nil
 }
 
+// AuthorInfo информация об автора бота
 type AuthorInfo struct {
 	ID        int64  `json:"id"`
 	Username  string `json:"username"`
@@ -37,6 +41,7 @@ type AuthorInfo struct {
 	Active    bool   `json:"active"`
 }
 
+// Bot частичная информация о боте
 type Bot struct {
 	Author     *AuthorInfo `json:"author"`
 	ID         int64       `json:"id"`
@@ -46,12 +51,14 @@ type Bot struct {
 	Score      int64       `json:"score"`
 }
 
+// BotFull полная информация о боте
 type BotFull struct {
 	Bot
 	Code     string `json:"code"`
 	Language Lang   `json:"lang"`
 }
 
+// BotStatusMessage обновление статуса бота, например: прошел проверку
 type BotStatusMessage struct {
 	AuthorID int64           `json:"-"`
 	GameSlug string          `json:"-"`
@@ -59,11 +66,13 @@ type BotStatusMessage struct {
 	Body     json.RawMessage `json:"body"`
 }
 
+// BotStatus новый статус бота
 type BotStatus struct {
 	BotID     int64  `json:"bot_id"`
 	NewStatus string `json:"new_status"`
 }
 
+// MatchStatus обновление статуса матча
 type MatchStatus struct {
 	Bot1ID    int64  `json:"bot1_id"`
 	Bot2ID    int64  `json:"bot2_id"`
@@ -72,6 +81,7 @@ type MatchStatus struct {
 	NewStatus string `json:"new_status"`
 }
 
+// MatchResult результаты прошедшего матча
 type MatchResult struct {
 	Bot1ID    int64 `json:"bot1_id"`
 	Bot2ID    int64 `json:"bot2_id"`
@@ -82,6 +92,7 @@ type MatchResult struct {
 	Winner    int   `json:"winner"`
 }
 
+// MatchInfo краткая информация о матче
 type MatchInfo struct {
 	ID       int64       `json:"id"`
 	Result   int         `json:"result"`
@@ -92,12 +103,14 @@ type MatchInfo struct {
 	Diff2    int64       `json:"diff2"`
 }
 
+// Replay повтор матча для плеера
 type Replay struct {
 	Info   json.RawMessage `json:"info"`
 	States json.RawMessage `json:"states"`
 	Winner int             `json:"winner"`
 }
 
+// MatchFullInfo полная информация о матче
 type MatchFullInfo struct {
 	MatchInfo
 	Replay    *Replay   `json:"replay"`
@@ -108,6 +121,7 @@ type MatchFullInfo struct {
 	Code      string    `json:"code"`
 }
 
+// NotifyMatchMessage сообщение для сервиса нотификации о матче
 type NotifyMatchMessage struct {
 	BotID    int64  `json:"bot_id"`
 	GameSlug string `json:"game_slug"`
@@ -115,6 +129,7 @@ type NotifyMatchMessage struct {
 	Diff     int64  `json:"diff"`
 }
 
+// NotifyVerifyMessage сообщение для сервиса нотификации о прохождении проверки
 type NotifyVerifyMessage struct {
 	BotID    int64  `json:"bot_id"`
 	GameSlug string `json:"game_slug"`

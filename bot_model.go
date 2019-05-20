@@ -30,7 +30,7 @@ func init() {
 	Bots = &AccessObject{}
 }
 
-// Bot mode for bots table
+// BotModel model for bots table
 type BotModel struct {
 	ID          int64
 	Code        string
@@ -43,6 +43,7 @@ type BotModel struct {
 	GamesPlayed int64
 }
 
+// Create создание записи о боте в базе данных
 func (bd *AccessObject) Create(b *BotModel) error {
 	tx, err := pqConn.Begin()
 	if err != nil {
@@ -75,6 +76,7 @@ func (bd *AccessObject) Create(b *BotModel) error {
 	return nil
 }
 
+// SetBotVerifiedByID установка флага проверки по ID
 func (bd *AccessObject) SetBotVerifiedByID(botID int64, isVerified bool) error {
 	row := pqConn.QueryRow(`UPDATE bots SET is_verified = $1 
 									WHERE bots.id = $2 RETURNING bots.id;`, isVerified, botID)
@@ -91,6 +93,7 @@ func (bd *AccessObject) SetBotVerifiedByID(botID int64, isVerified bool) error {
 	return nil
 }
 
+// SetBotScoreByID установка очков для бота по ID
 func (bd *AccessObject) SetBotScoreByID(botID int64, newScore int64) error {
 	_, err := pqConn.Exec(`UPDATE bots SET score = $1 
 									WHERE bots.id = $2;`, newScore, botID)
@@ -101,6 +104,7 @@ func (bd *AccessObject) SetBotScoreByID(botID int64, newScore int64) error {
 	return nil
 }
 
+// GetBotByID получение бота по его идентификатору
 func (bd *AccessObject) GetBotByID(botID int64) (*BotModel, error) {
 	row := pqConn.QueryRow(`SELECT b.id, b.code, b.language,
 	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played 
@@ -121,6 +125,7 @@ func (bd *AccessObject) GetBotByID(botID int64) (*BotModel, error) {
 	return bot, nil
 }
 
+// GetBotsByGameSlugAndAuthorID получение спика ботов для какой-либо игры и/или пользователя
 func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error) {
 	args := []interface{}{}
 	query := `SELECT b.id, b.code, b.language,
@@ -164,6 +169,7 @@ func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string
 	return bots, nil
 }
 
+// GetBotsForTesting выборка ботов для новой серии матчев
 func (bd *AccessObject) GetBotsForTesting(N int64, game string) ([]*BotModel, error) {
 	query := `(SELECT distinct * FROM (SELECT b.id, b.code, b.language,
 	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played

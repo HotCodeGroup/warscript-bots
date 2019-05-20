@@ -16,17 +16,17 @@ type MatchAccessObject interface {
 	GetMatchesByGameSlugAndAuthorID(authorID int64, gameSlug string, limit int64, since int64) ([]*MatchModel, error)
 }
 
-// AccessObject implementation of BotAccessObject
+// MatchObject implementation of BotAccessObject
 type MatchObject struct{}
 
-// Bots объект для обращения с моделью bot
+// Matches объект для обращения с моделью match
 var Matches MatchAccessObject
 
 func init() {
 	Matches = &MatchObject{}
 }
 
-// Bot mode for bots table
+// MatchModel model for matches table
 type MatchModel struct {
 	ID        int64
 	Info      []byte
@@ -45,6 +45,7 @@ type MatchModel struct {
 	Diff2     sql.NullInt64
 }
 
+// GetError возвращает ошибку, если она есть, либо пустую строку
 func (m *MatchModel) GetError() string {
 	if m.Error.Valid {
 		return m.Error.String
@@ -53,6 +54,7 @@ func (m *MatchModel) GetError() string {
 	return ""
 }
 
+// GetBot2 возвращает id бота соперника, либо 0, если игра с системным ботом
 func (m *MatchModel) GetBot2() int64 {
 	if m.Bot2.Valid {
 		return m.Bot2.Int64
@@ -61,6 +63,7 @@ func (m *MatchModel) GetBot2() int64 {
 	return 0
 }
 
+// GetAuthor2 возвращает id автора бота соперника, либо 0, если игра с системным ботом
 func (m *MatchModel) GetAuthor2() int64 {
 	if m.Author2.Valid {
 		return m.Author2.Int64
@@ -69,6 +72,7 @@ func (m *MatchModel) GetAuthor2() int64 {
 	return 0
 }
 
+// GetDiff2 возвращает очки для автора бота соперника, либо 0, если игра с системным ботом
 func (m *MatchModel) GetDiff2() int64 {
 	if m.Diff2.Valid {
 		return m.Diff2.Int64
@@ -77,6 +81,7 @@ func (m *MatchModel) GetDiff2() int64 {
 	return 0
 }
 
+// Create создание новой записи о матче в DB
 func (o *MatchObject) Create(m *MatchModel) error {
 	tx, err := pqConn.Begin()
 	if err != nil {
@@ -102,6 +107,7 @@ func (o *MatchObject) Create(m *MatchModel) error {
 	return nil
 }
 
+// GetMatchByID Получение матча по его идентификатору
 func (o *MatchObject) GetMatchByID(matchID int64) (*MatchModel, error) {
 	row := pqConn.QueryRow(`SELECT m.id, m.game_slug, m.info, m.states, m.error, m.result, m.time, m.bot_1, m.author_1,
        m.log_1, m.diff_1, m.bot_2, m.author_2, m.log_2, m.diff_2 FROM matches m WHERE m.id=$1`, matchID)
@@ -120,6 +126,7 @@ func (o *MatchObject) GetMatchByID(matchID int64) (*MatchModel, error) {
 	return m, nil
 }
 
+// GetMatchesByGameSlugAndAuthorID получение списка матчей для игры и/или автора
 func (o *MatchObject) GetMatchesByGameSlugAndAuthorID(authorID int64, gameSlug string, limit int64, since int64) ([]*MatchModel, error) {
 	args := []interface{}{since}
 

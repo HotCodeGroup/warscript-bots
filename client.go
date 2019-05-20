@@ -13,6 +13,7 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 )
 
+// BotVerifyClient представление клиента для WS
 type BotVerifyClient struct {
 	SessionID string
 	UserID    int64
@@ -23,6 +24,7 @@ type BotVerifyClient struct {
 	send chan *BotStatusMessage
 }
 
+// WaitForClose удаление клиента из hub при отключении от WS
 func (bv *BotVerifyClient) WaitForClose() {
 	logger := log.WithFields(log.Fields{
 		"ws_session": bv.SessionID,
@@ -45,6 +47,7 @@ func (bv *BotVerifyClient) WaitForClose() {
 	}
 }
 
+// WriteStatusUpdates отправка новых статусов в leaderboard
 func (bv *BotVerifyClient) WriteStatusUpdates() {
 	logger := log.WithFields(log.Fields{
 		"ws_session": bv.SessionID,

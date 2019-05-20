@@ -17,25 +17,30 @@ const (
 	testerQueueName = "tester_rpc_queue"
 )
 
+// TesterStatusQueue сообщение полученное из очереди задач
 type TesterStatusQueue struct {
 	Type string          `json:"type"`
 	Body json.RawMessage `json:"body"`
 }
 
+// TesterStatusUpdate обновление статуса полученное из очереди задач
 type TesterStatusUpdate struct {
 	NewStatus string `json:"new_status"`
 }
 
+// TesterStatusError ошибка полученная из очереди задач
 type TesterStatusError struct {
 	Error string `json:"error"`
 }
 
+// TesterStatusResult результат матча полученный из очереди задач
 type TesterStatusResult struct {
 	Info   json.RawMessage `json:"info"`
 	States json.RawMessage `json:"states"`
 	Winner int             `json:"result"`
 }
 
+// TestTask представление задачи на проверку, которое кладётся в очередь задач
 type TestTask struct {
 	Code1    string `json:"code1"`
 	Code2    string `json:"code2"`

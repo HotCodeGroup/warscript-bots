@@ -23,6 +23,7 @@ func SessionInfo(r *http.Request) *models.SessionPayload {
 	return nil
 }
 
+// CreateBot создание бота в базе данных + отправка его на проверку
 func CreateBot(w http.ResponseWriter, r *http.Request) {
 	logger := utils.GetLogger(r, logger, "CreateBot")
 	errWriter := utils.NewErrorResponseWriter(w, logger)
@@ -119,6 +120,7 @@ func CreateBot(w http.ResponseWriter, r *http.Request) {
 	utils.WriteApplicationJSON(w, http.StatusOK, botFull)
 }
 
+// GetBotsList получение списка ботов
 func GetBotsList(w http.ResponseWriter, r *http.Request) {
 	logger := utils.GetLogger(r, logger, "GetBotsList")
 	errWriter := utils.NewErrorResponseWriter(w, logger)
@@ -216,6 +218,7 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 	utils.WriteApplicationJSON(w, http.StatusOK, respBots)
 }
 
+// OpenVerifyWS отдаёт лидерборд
 func OpenVerifyWS(w http.ResponseWriter, r *http.Request) {
 	logger := utils.GetLogger(r, logger, "GetBotsList")
 	errWriter := utils.NewErrorResponseWriter(w, logger)

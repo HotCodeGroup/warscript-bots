@@ -141,6 +141,7 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 	utils.WriteApplicationJSON(w, http.StatusOK, resp)
 }
 
+// GetMatchList получает список последних матчей
 func GetMatchList(w http.ResponseWriter, r *http.Request) {
 	logger := utils.GetLogger(r, logger, "GetMatchList")
 	errWriter := utils.NewErrorResponseWriter(w, logger)
