@@ -250,6 +250,7 @@ func TestSetBotScoreByIDInternal(t *testing.T) {
 	}
 }
 
+//nolint: dupl
 func TestGetBotsByGameSlugAndAuthorIDok(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -344,6 +345,7 @@ func TestGetBotsByGameSlugAndAuthorIDScanInternal(t *testing.T) {
 	}
 }
 
+//nolint: dupl
 func TestGetBotsForTestingOK(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {

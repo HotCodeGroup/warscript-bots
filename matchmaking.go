@@ -32,7 +32,7 @@ func startMatchmaking() {
 			}
 
 			wg := sync.WaitGroup{}
-			for i := 0; i < len(bots); i += 1 {
+			for i := 0; i < len(bots); i++ {
 				nextI := i + 1
 				if nextI == len(bots) {
 					nextI = 0
@@ -224,7 +224,7 @@ func processTestingStatus(bot1, bot2 *BotModel,
 			res := &TesterStatusError{}
 			err := json.Unmarshal(event.Body, res)
 			if err != nil {
-				logger.Error(errors.Wrap(err, "can not unmarshal result status body"))
+				logger.Error(errors.Wrap(err, "can not unmarshal error status body"))
 				continue
 			}
 

@@ -3,3 +3,4 @@ warscript-bots
 /utils
 coverage.out
 .vscode
+test.sh

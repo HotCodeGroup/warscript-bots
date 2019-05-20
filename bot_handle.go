@@ -194,14 +194,12 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 				PhotoUUID: userInfo.PhotoUUID,
 				Active:    userInfo.Active,
 			}
-		} else {
-			if protUser, ok := authorsSet[bot.AuthorID]; ok {
-				ai = &AuthorInfo{
-					ID:        protUser.ID,
-					Username:  protUser.Username,
-					PhotoUUID: protUser.PhotoUUID,
-					Active:    protUser.Active,
-				}
+		} else if protUser, ok := authorsSet[bot.AuthorID]; ok {
+			ai = &AuthorInfo{
+				ID:        protUser.ID,
+				Username:  protUser.Username,
+				PhotoUUID: protUser.PhotoUUID,
+				Active:    protUser.Active,
 			}
 		}
 

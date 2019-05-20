@@ -36,6 +36,7 @@ var (
 	pqConn *sql.DB
 )
 
+//nolint: gocyclo
 func main() {
 	var err error
 	logger, err = logging.NewLogger(os.Stdout, os.Getenv("LOGENTRIESRUS_TOKEN"))

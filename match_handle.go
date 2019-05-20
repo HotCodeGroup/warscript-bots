@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-//GetMatch gets match full info by ID
+// GetMatch gets match full info by ID
 func GetMatch(w http.ResponseWriter, r *http.Request) {
 	logger := utils.GetLogger(r, logger, "GetMatch")
 	errWriter := utils.NewErrorResponseWriter(w, logger)
@@ -35,7 +35,7 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ids := []*models.UserID{
-		&models.UserID{ID: matchInfo.Author1},
+		{ID: matchInfo.Author1},
 	}
 
 	// второй игрок может быть нашим ботом
@@ -53,38 +53,23 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 
 	var ai1 *AuthorInfo
 	var ai2 *AuthorInfo
-	if len(users.Users) > 0 {
-		if users.Users[0].ID == matchInfo.Author1 {
-			ai1 = &AuthorInfo{
-				ID:        users.Users[0].ID,
-				Username:  users.Users[0].Username,
-				PhotoUUID: users.Users[0].PhotoUUID,
-				Active:    users.Users[0].Active,
-			}
-		} else if matchInfo.Author2.Valid && users.Users[0].ID == matchInfo.Author2.Int64 {
-			ai2 = &AuthorInfo{
-				ID:        users.Users[0].ID,
-				Username:  users.Users[0].Username,
-				PhotoUUID: users.Users[0].PhotoUUID,
-				Active:    users.Users[0].Active,
-			}
-		}
-	}
 
-	if len(users.Users) > 1 {
-		if users.Users[1].ID == matchInfo.Author1 {
-			ai1 = &AuthorInfo{
-				ID:        users.Users[1].ID,
-				Username:  users.Users[1].Username,
-				PhotoUUID: users.Users[1].PhotoUUID,
-				Active:    users.Users[1].Active,
-			}
-		} else if matchInfo.Author2.Valid && users.Users[1].ID == matchInfo.Author2.Int64 {
-			ai2 = &AuthorInfo{
-				ID:        users.Users[1].ID,
-				Username:  users.Users[1].Username,
-				PhotoUUID: users.Users[1].PhotoUUID,
-				Active:    users.Users[1].Active,
+	for j := 0; j < 2; j++ {
+		if len(users.Users) > j {
+			if users.Users[j].ID == matchInfo.Author1 {
+				ai1 = &AuthorInfo{
+					ID:        users.Users[j].ID,
+					Username:  users.Users[j].Username,
+					PhotoUUID: users.Users[j].PhotoUUID,
+					Active:    users.Users[j].Active,
+				}
+			} else if matchInfo.Author2.Valid && users.Users[j].ID == matchInfo.Author2.Int64 {
+				ai2 = &AuthorInfo{
+					ID:        users.Users[j].ID,
+					Username:  users.Users[j].Username,
+					PhotoUUID: users.Users[j].PhotoUUID,
+					Active:    users.Users[j].Active,
+				}
 			}
 		}
 	}

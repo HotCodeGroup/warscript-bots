@@ -94,7 +94,7 @@ func (bd *AccessObject) SetBotVerifiedByID(botID int64, isVerified bool) error {
 }
 
 // SetBotScoreByID установка очков для бота по ID
-func (bd *AccessObject) SetBotScoreByID(botID int64, newScore int64) error {
+func (bd *AccessObject) SetBotScoreByID(botID, newScore int64) error {
 	_, err := pqConn.Exec(`UPDATE bots SET score = $1 
 									WHERE bots.id = $2;`, newScore, botID)
 	if err != nil {
@@ -170,7 +170,7 @@ func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string
 }
 
 // GetBotsForTesting выборка ботов для новой серии матчев
-func (bd *AccessObject) GetBotsForTesting(N int64, game string) ([]*BotModel, error) {
+func (bd *AccessObject) GetBotsForTesting(n int64, game string) ([]*BotModel, error) {
 	query := `(SELECT distinct * FROM (SELECT b.id, b.code, b.language,
 	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played
 	FROM bots b WHERE b.is_verified = true AND b.game_slug = $1 AND b.games_played > 0 ORDER BY random() LIMIT $2) l) 
@@ -179,7 +179,7 @@ func (bd *AccessObject) GetBotsForTesting(N int64, game string) ([]*BotModel, er
 	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played
 	FROM bots b WHERE b.is_verified = true AND b.game_slug = $1 AND b.games_played = 0)`
 
-	rows, err := pqConn.Query(query, game, N)
+	rows, err := pqConn.Query(query, game, n)
 	if err != nil {
 		return nil, errors.Wrapf(utils.ErrInternal, "get bots for testing error: %v", err)
 	}
