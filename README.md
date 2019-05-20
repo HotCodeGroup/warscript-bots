@@ -1,6 +1,6 @@
 # Warscript Bots
 
-[![rcard](https://goreportcard.com/badge/github.com/HotCodeGroup/warscript-bots)](https://goreportcard.com/report/github.com/HotCodeGroup/warscript-bots)
+[![rcard](https://goreportcard.com/badge/github.com/HotCodeGroup/warscript-bots?service=github)](https://goreportcard.com/report/github.com/HotCodeGroup/warscript-bots)
 
 💻 Microservice for bots&amp;match statistics
 
