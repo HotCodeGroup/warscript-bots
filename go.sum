@@ -18,6 +18,8 @@ github.com/HotCodeGroup/warscript-utils v0.0.0-20190511125343-547128e209b6 h1:DW
 github.com/HotCodeGroup/warscript-utils v0.0.0-20190511125343-547128e209b6/go.mod h1:3wXifW8LqBmbXZkEu1LvycQ0RzCOrjHSYgQejGw0BvY=
 github.com/HotCodeGroup/warscript-utils v0.0.0-20190512124807-e73b9b79228f h1:FWEt4v9q3TEb7mtjFeHzW6bVFAOeNWKwvMzTnFBmNVY=
 github.com/HotCodeGroup/warscript-utils v0.0.0-20190512124807-e73b9b79228f/go.mod h1:3wXifW8LqBmbXZkEu1LvycQ0RzCOrjHSYgQejGw0BvY=
+github.com/HotCodeGroup/warscript-utils v0.0.0-20190525134135-f9addc69c0b4 h1:Tt0IwQ2oHLJ2kMn8zy9DTiqiNR25y8BDK77uqDugoFk=
+github.com/HotCodeGroup/warscript-utils v0.0.0-20190525134135-f9addc69c0b4/go.mod h1:J9NmJnSgvTmXoFRZDmyQxbxahaEM9qgtakUa5/GCr24=
 github.com/NeowayLabs/wabbit v0.0.0-20190108150251-e762dd02f7f2 h1:LwyUeNu/lr35IWACsl8lZs+bhSbYEkfhKMojgFBA7xo=
 github.com/NeowayLabs/wabbit v0.0.0-20190108150251-e762dd02f7f2/go.mod h1:Jp6npmrFAOZdPpJQgIQyDzaSApVtYTSrK5VAV49OtfQ=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc h1:cAKDfWh5VpdgMhJosfJnn5/FoN2SRZ4p7fJNX58YPaU=

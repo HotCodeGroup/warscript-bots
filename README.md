@@ -1,5 +1,6 @@
 # Warscript Bots
 
+[![Travis](https://travis-ci.org/HotCodeGroup/warscript-bots.svg?branch=master)](https://travis-ci.org/HotCodeGroup/warscript-bots)
 [![rcard](https://goreportcard.com/badge/github.com/HotCodeGroup/warscript-bots)](https://goreportcard.com/report/github.com/HotCodeGroup/warscript-bots)
 
 💻 Microservice for bots&amp;match statistics

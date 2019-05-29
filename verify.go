@@ -188,6 +188,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				Type:     "verify",
 			}
 
+			var diff int64
 			if res.Winner == 1 || res.Winner == 0 {
 				err = Bots.SetBotVerifiedByID(botID, true)
 				if err != nil {
@@ -200,6 +201,8 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 					logger.Error(errors.Wrap(err, "can update bot verified status"))
 					continue
 				}
+
+				diff = 400
 			}
 
 			m := &MatchModel{
@@ -209,7 +212,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				GameSlug: gameSlug,
 				Bot1:     botID,
 				Author1:  authorID,
-				Diff1:    400,
+				Diff1:    diff,
 			}
 			err = Matches.Create(m)
 			if err != nil {
