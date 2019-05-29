@@ -8,7 +8,6 @@ docker tag warscript-bots $DOCKER_USER/warscript-bots
 docker push $DOCKER_USER/warscript-bots
 
 echo -e "# Starting docker.\n"
-echo $CONSUL_ADDR
 
 chmod 600 ./2019_1_HotCode_id_rsa.pem
 ssh-keyscan -H 89.208.198.192 >> ~/.ssh/known_hosts
