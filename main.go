@@ -150,6 +150,7 @@ func main() {
 	defer notifyGRPCConn.Close()
 	notifyGRPC = models.NewNotifyClient(notifyGRPCConn)
 
+	logger.Info("starting hub...")
 	h = &hub{
 		sessions:   make(map[int64]map[string]map[string]chan *BotStatusMessage),
 		broadcast:  make(chan *BotStatusMessage),
