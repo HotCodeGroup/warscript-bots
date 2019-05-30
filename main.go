@@ -130,7 +130,6 @@ func main() {
 	}
 	defer deregisterService(consul, httpServiceID)
 
-	logger.Info("connecting grpc auth...")
 	authGPRCConn, err := balancer.ConnectClient(consul, "warscript-users-grpc")
 	if err != nil {
 		logger.Errorf("can not connect to auth grpc: %s", err.Error())
@@ -139,7 +138,6 @@ func main() {
 	defer authGPRCConn.Close()
 	authGPRC = models.NewAuthClient(authGPRCConn)
 
-	logger.Info("connecting grpc games...")
 	gamesGPRCConn, err := balancer.ConnectClient(consul, "warscript-games-grpc")
 	if err != nil {
 		logger.Errorf("can not connect to games grpc: %s", err.Error())
@@ -148,7 +146,6 @@ func main() {
 	defer gamesGPRCConn.Close()
 	gamesGPRC = models.NewGamesClient(gamesGPRCConn)
 
-	logger.Info("connecting grpc notify...")
 	notifyGRPCConn, err := balancer.ConnectClient(consul, "warscript-notify-grpc")
 	if err != nil {
 		logger.Errorf("can not connect to notify grpc: %s", err.Error())
@@ -157,7 +154,6 @@ func main() {
 	defer notifyGRPCConn.Close()
 	notifyGRPC = models.NewNotifyClient(notifyGRPCConn)
 
-	logger.Info("starting hub...")
 	h = &hub{
 		sessions:   make(map[int64]map[string]map[string]chan *BotStatusMessage),
 		broadcast:  make(chan *BotStatusMessage),
