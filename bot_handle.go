@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/HotCodeGroup/warscript-utils/middlewares"
 	"github.com/HotCodeGroup/warscript-utils/models"
@@ -146,8 +147,20 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 		authorID = userInfo.ID
 	}
 
+	limitS := r.URL.Query().Get("limit")
+	sinceS := r.URL.Query().Get("since")
+
+	limit, err := strconv.ParseInt(limitS, 10, 64)
+	if err != nil {
+		limit = 10
+	}
+	since, err := strconv.ParseInt(sinceS, 10, 64)
+	if err != nil {
+		since = 0
+	}
+
 	gameSlug := r.URL.Query().Get("game_slug")
-	bots, err := Bots.GetBotsByGameSlugAndAuthorID(authorID, gameSlug)
+	bots, err := Bots.GetBotsByGameSlugAndAuthorID(authorID, gameSlug, limit, since)
 	if err != nil {
 		errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "get bot method error"))
 		return

@@ -16,7 +16,7 @@ type BotAccessObject interface {
 	SetBotVerifiedByID(botID int64, isActive bool) error
 	SetBotScoreByID(botID int64, newScore int64) error
 	GetBotByID(botID int64) (*BotModel, error)
-	GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error)
+	GetBotsByGameSlugAndAuthorID(authorID int64, game string, limit, since int64) ([]*BotModel, error)
 	GetBotsForTesting(N int64, game string) ([]*BotModel, error)
 }
 
@@ -126,7 +126,8 @@ func (bd *AccessObject) GetBotByID(botID int64) (*BotModel, error) {
 }
 
 // GetBotsByGameSlugAndAuthorID получение спика ботов для какой-либо игры и/или пользователя
-func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string) ([]*BotModel, error) {
+func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string,
+	limit, since int64) ([]*BotModel, error) {
 	args := []interface{}{}
 	query := `SELECT b.id, b.code, b.language,
 	b.is_active, b.is_verified, b.author_id, b.game_slug, b.score, b.games_played 
@@ -146,7 +147,13 @@ func (bd *AccessObject) GetBotsByGameSlugAndAuthorID(authorID int64, game string
 		query += strconv.Itoa(len(args) + 1)
 		args = append(args, game)
 	}
-	query += " ORDER BY b.score DESC;"
+	query += " ORDER BY b.score DESC LIMIT $"
+	query += strconv.Itoa(len(args) + 1)
+	args = append(args, limit)
+	query += " OFFSET $"
+	query += strconv.Itoa(len(args) + 1)
+	args = append(args, since)
+	query += ";"
 
 	rows, err := pqConn.Query(query, args...)
 	if err != nil {

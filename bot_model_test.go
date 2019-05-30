@@ -267,7 +267,7 @@ func TestGetBotsByGameSlugAndAuthorIDok(t *testing.T) {
 	pqConn = db
 	Bots = &AccessObject{}
 
-	botModel, err := Bots.GetBotsByGameSlugAndAuthorID(1, "pong")
+	botModel, err := Bots.GetBotsByGameSlugAndAuthorID(1, "pong", 10, 0)
 	if err != nil {
 		t.Errorf("GetBotsByGameSlugAndAuthorID got unexpected error: %v", err)
 	}
@@ -309,7 +309,7 @@ func TestGetBotsByGameSlugAndAuthorIDInternal(t *testing.T) {
 	pqConn = db
 	Bots = &AccessObject{}
 
-	_, err = Bots.GetBotsByGameSlugAndAuthorID(1, "pong")
+	_, err = Bots.GetBotsByGameSlugAndAuthorID(1, "pong", 10, 0)
 	if errors.Cause(err) != utils.ErrInternal {
 		t.Errorf("TestGetBotsByGameSlugAndAuthorIDInternal got unexpected error: %v", err)
 	}
@@ -335,7 +335,7 @@ func TestGetBotsByGameSlugAndAuthorIDScanInternal(t *testing.T) {
 	pqConn = db
 	Bots = &AccessObject{}
 
-	_, err = Bots.GetBotsByGameSlugAndAuthorID(0, "pong")
+	_, err = Bots.GetBotsByGameSlugAndAuthorID(0, "pong", 10, 0)
 	if errors.Cause(err) != utils.ErrInternal {
 		t.Errorf("TestGetBotsByGameSlugAndAuthorIDInternal got unexpected error: %v", err)
 	}
