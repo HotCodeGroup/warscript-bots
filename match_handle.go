@@ -89,13 +89,16 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 			Author1:  ai1,
 			Author2:  ai2,
 		},
-		Replay: &Replay{
+		Error:     matchInfo.GetError(),
+		Timestamp: matchInfo.Timestamp,
+	}
+
+	if matchInfo.Result != 3 {
+		resp.Replay = &Replay{
 			Info:   matchInfo.Info,
 			States: matchInfo.States,
 			Winner: matchInfo.Result,
-		},
-		Error:     matchInfo.GetError(),
-		Timestamp: matchInfo.Timestamp,
+		}
 	}
 
 	var session *models.SessionPayload
