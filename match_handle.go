@@ -131,6 +131,25 @@ func GetMatchList(w http.ResponseWriter, r *http.Request) {
 	logger := utils.GetLogger(r, logger, "GetMatchList")
 	errWriter := utils.NewErrorResponseWriter(w, logger)
 
+	authorUsername := r.URL.Query().Get("author")
+	var err error
+	var authorID int64 = -1
+	var userInfo *models.InfoUser
+	if authorUsername != "" {
+		userInfo, err = authGPRC.GetUserByUsername(context.Background(), &models.Username{Username: authorUsername})
+		if err != nil {
+			if errors.Cause(err) == utils.ErrNotExists {
+				utils.WriteApplicationJSON(w, http.StatusOK, []*Bot{})
+			} else {
+				errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "can not find user by username"))
+			}
+
+			return
+		}
+
+		authorID = userInfo.ID
+	}
+
 	limitS := r.URL.Query().Get("limit")
 	sinceS := r.URL.Query().Get("since")
 
@@ -144,7 +163,7 @@ func GetMatchList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	gameSlug := r.URL.Query().Get("game_slug")
-	matches, err := Matches.GetMatchesByGameSlugAndAuthorID(-1, gameSlug, limit, since)
+	matches, err := Matches.GetMatchesByGameSlugAndAuthorID(authorID, gameSlug, limit, since)
 	if err != nil {
 		errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "get bot method error"))
 		return
