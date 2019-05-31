@@ -82,6 +82,8 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 			ID:       matchInfo.ID,
 			Result:   matchInfo.Result,
 			GameSlug: matchInfo.GameSlug,
+			Bot1ID:   matchInfo.Bot1,
+			Bot2ID:   matchInfo.GetBot2(),
 			Diff1:    matchInfo.Diff1,
 			Diff2:    matchInfo.GetDiff2(),
 			Author1:  ai1,
@@ -94,8 +96,6 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 		},
 		Error:     matchInfo.GetError(),
 		Timestamp: matchInfo.Timestamp,
-		Bot1ID:    matchInfo.Bot1,
-		Bot2ID:    matchInfo.GetBot2(),
 	}
 
 	var session *models.SessionPayload

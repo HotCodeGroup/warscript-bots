@@ -101,8 +101,6 @@ type MatchFullInfo struct {
 	Replay    *Replay   `json:"replay"`
 	Error     string    `json:"error"`
 	Timestamp time.Time `json:"timestamp"`
-	Bot1ID    int64     `json:"bot1_id"`
-	Bot2ID    int64     `json:"bot2_id"`
 	Code      string    `json:"code"`
 }
 

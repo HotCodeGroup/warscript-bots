@@ -81,6 +81,8 @@ func processTestingStatus(bot1, bot2 *BotModel,
 	for event := range events {
 		logger.Infof("Processing [%s]", event.Type)
 		switch event.Type {
+		case "status":
+			continue
 		case "result":
 			res := &TesterStatusResult{}
 			err := json.Unmarshal(event.Body, res)
