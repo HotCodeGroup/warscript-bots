@@ -81,37 +81,6 @@ func processTestingStatus(bot1, bot2 *BotModel,
 	for event := range events {
 		logger.Infof("Processing [%s]", event.Type)
 		switch event.Type {
-		case "status":
-			upd := &TesterStatusUpdate{}
-			err := json.Unmarshal(event.Body, upd)
-			if err != nil {
-				logger.Error(errors.Wrap(err, "can not unmarshal update status body"))
-				continue
-			}
-
-			body, _ := json.Marshal(&MatchStatus{
-				Bot1ID:    bot1.ID,
-				Bot2ID:    bot2.ID,
-				Author1ID: bot1.AuthorID,
-				Author2ID: bot2.AuthorID,
-				NewStatus: upd.NewStatus,
-			})
-
-			broadcast <- &BotStatusMessage{
-				AuthorID: bot1.AuthorID,
-				GameSlug: gameSlug,
-				Body:     body,
-				Type:     "match_status",
-			}
-
-			broadcast <- &BotStatusMessage{
-				AuthorID: bot2.AuthorID,
-				GameSlug: gameSlug,
-				Body:     body,
-				Type:     "match_status",
-			}
-
-			status = upd.NewStatus
 		case "result":
 			res := &TesterStatusResult{}
 			err := json.Unmarshal(event.Body, res)
@@ -120,32 +89,8 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				continue
 			}
 
+			// Обновили ботов
 			newScore1, newScore2 := newRatings(bot1.Score, bot2.Score, res.Winner)
-
-			body, _ := json.Marshal(&MatchResult{
-				Bot1ID:    bot1.ID,
-				Bot2ID:    bot2.ID,
-				Author1ID: bot1.AuthorID,
-				Author2ID: bot2.AuthorID,
-				NewScore1: newScore1,
-				NewScore2: newScore2,
-				Winner:    res.Winner,
-			})
-
-			broadcast <- &BotStatusMessage{
-				AuthorID: bot1.AuthorID,
-				GameSlug: gameSlug,
-				Body:     body,
-				Type:     "match",
-			}
-
-			broadcast <- &BotStatusMessage{
-				AuthorID: bot2.AuthorID,
-				GameSlug: gameSlug,
-				Body:     body,
-				Type:     "match",
-			}
-
 			err = Bots.SetBotScoreByID(bot1.ID, newScore1)
 			if err != nil {
 				logger.Error(errors.Wrap(err, "can't update bot1 score"))
@@ -157,6 +102,7 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				continue
 			}
 
+			// сохранили матч
 			m := &MatchModel{
 				Info:     res.Info,
 				States:   res.States,
@@ -177,7 +123,82 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				continue
 			}
 
-			body1, err := json.Marshal(&NotifyMatchMessage{
+			// делаем запрос
+			userIDsM := &models.UserIDs{
+				IDs: []*models.UserID{
+					{ID: bot1.AuthorID},
+					{ID: bot2.AuthorID},
+				},
+			}
+			authorsInfo, err := authGPRC.GetUsersByIDs(context.Background(), userIDsM)
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not get author info"))
+				continue
+			}
+
+			// формиурем хеш ответов
+			authorsSet := make(map[int64]*models.InfoUser, len(authorsInfo.Users))
+			for _, authorInfo := range authorsInfo.Users {
+				authorsSet[authorInfo.ID] = authorInfo
+			}
+
+			var ai1 *AuthorInfo
+			var ai2 *AuthorInfo
+
+			// вдруг какая-то инфа не пришла
+			if protUser, ok := authorsSet[bot1.AuthorID]; ok {
+				ai1 = &AuthorInfo{
+					ID:        protUser.ID,
+					Username:  protUser.Username,
+					PhotoUUID: protUser.PhotoUUID,
+					Active:    protUser.Active,
+				}
+			}
+
+			if protUser, ok := authorsSet[bot2.AuthorID]; ok {
+				ai2 = &AuthorInfo{
+					ID:        protUser.ID,
+					Username:  protUser.Username,
+					PhotoUUID: protUser.PhotoUUID,
+					Active:    protUser.Active,
+				}
+			}
+
+			body, err := json.Marshal(&MatchInfo{
+				ID:        m.ID,
+				Result:    m.Result,
+				GameSlug:  m.GameSlug,
+				Author1:   ai1,
+				Author2:   ai2,
+				Bot1ID:    bot1.ID,
+				Bot2ID:    bot2.ID,
+				NewScore1: newScore1,
+				NewScore2: newScore2,
+				Diff1:     newScore1 - bot1.Score,
+				Diff2:     newScore2 - bot2.Score,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can marshal match info"))
+				continue
+			}
+
+			// т.к. инфу ещё нужно отправить двум юзерам
+			broadcast <- &BotStatusMessage{
+				AuthorID: bot1.AuthorID,
+				GameSlug: gameSlug,
+				Body:     body,
+				Type:     "match",
+			}
+
+			broadcast <- &BotStatusMessage{
+				Private:  true,
+				AuthorID: bot2.AuthorID,
+				GameSlug: gameSlug,
+				Body:     body,
+				Type:     "match",
+			}
+
+			bodyVK1, err := json.Marshal(&NotifyMatchMessage{
 				BotID:    bot1.ID,
 				GameSlug: gameSlug,
 				MatchID:  m.ID,
@@ -192,14 +213,14 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				Type: "match",
 				User: bot1.AuthorID,
 				Game: gameSlug,
-				Body: body1,
+				Body: bodyVK1,
 			})
 			if err != nil {
 				logger.Error(errors.Wrap(err, "can send notify to user1"))
 				continue
 			}
 
-			body2, err := json.Marshal(&NotifyMatchMessage{
+			bodyVK2, err := json.Marshal(&NotifyMatchMessage{
 				BotID:    bot2.ID,
 				GameSlug: gameSlug,
 				MatchID:  m.ID,
@@ -213,7 +234,7 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				Type: "match",
 				User: bot2.AuthorID,
 				Game: gameSlug,
-				Body: body2,
+				Body: bodyVK2,
 			})
 			if err != nil {
 				logger.Error(errors.Wrap(err, "can send notify to user1"))
@@ -228,32 +249,7 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				continue
 			}
 
-			logger.Info(res.Error)
-
-			body, _ := json.Marshal(&MatchResult{
-				Bot1ID:    bot1.ID,
-				Bot2ID:    bot2.ID,
-				Author1ID: bot1.AuthorID,
-				Author2ID: bot2.AuthorID,
-				NewScore1: bot1.Score,
-				NewScore2: bot2.Score,
-				Winner:    -1,
-			})
-
-			broadcast <- &BotStatusMessage{
-				AuthorID: bot1.AuthorID,
-				GameSlug: gameSlug,
-				Body:     body,
-				Type:     "match_error",
-			}
-
-			broadcast <- &BotStatusMessage{
-				AuthorID: bot2.AuthorID,
-				GameSlug: gameSlug,
-				Body:     body,
-				Type:     "match_error",
-			}
-
+			logger.Infof("Match error: %s", res.Error)
 			err = Matches.Create(&MatchModel{
 				Result:   3,
 				Error:    sql.NullString{String: res.Error, Valid: true},

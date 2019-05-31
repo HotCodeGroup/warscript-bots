@@ -8,8 +8,6 @@ import (
 	"github.com/HotCodeGroup/warscript-utils/middlewares"
 	"github.com/HotCodeGroup/warscript-utils/models"
 	"github.com/HotCodeGroup/warscript-utils/utils"
-	"github.com/google/uuid"
-	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 )
 
@@ -233,42 +231,4 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteApplicationJSON(w, http.StatusOK, respBots)
-}
-
-// OpenVerifyWS отдаёт лидерборд
-func OpenVerifyWS(w http.ResponseWriter, r *http.Request) {
-	logger := utils.GetLogger(r, logger, "GetBotsList")
-	errWriter := utils.NewErrorResponseWriter(w, logger)
-	// info := SessionInfo(r)
-	// if info == nil {
-	// 	errWriter.WriteWarn(http.StatusUnauthorized, errors.New("session info is not presented"))
-	// 	return
-	// }
-
-	gameSlug := r.URL.Query().Get("game_slug")
-	upgrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true // мы уже прошли слой CORS
-		},
-	}
-	c, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "upgrade to websocket error"))
-		return
-	}
-
-	sessionID := uuid.New().String()
-	verifyClient := &BotVerifyClient{
-		SessionID: sessionID,
-		//UserID:    1,
-		GameSlug: gameSlug,
-
-		h:    h,
-		conn: c,
-		send: make(chan *BotStatusMessage),
-	}
-	verifyClient.h.register <- verifyClient
-
-	go verifyClient.WriteStatusUpdates()
-	go verifyClient.WaitForClose()
 }

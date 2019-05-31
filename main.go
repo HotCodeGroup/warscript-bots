@@ -183,8 +183,8 @@ func main() {
 	r := mux.NewRouter().PathPrefix("/v1").Subrouter()
 	r.HandleFunc("/bots", middlewares.WithAuthentication(CreateBot, logger, authGPRC)).Methods("POST")
 	r.HandleFunc("/bots", GetBotsList).Methods("GET")
-	r.HandleFunc("/bots/verification", OpenVerifyWS).Methods("GET")
 
+	r.HandleFunc("/matches/connect", OpenWS).Methods("GET")
 	r.HandleFunc("/matches", GetMatchList).Methods("GET")
 	r.HandleFunc("/matches/{match_id:[0-9]+}", GetMatch).Methods("GET")
 

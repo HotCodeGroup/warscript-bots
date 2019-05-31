@@ -60,6 +60,7 @@ type BotFull struct {
 
 // BotStatusMessage обновление статуса бота, например: прошел проверку
 type BotStatusMessage struct {
+	Private  bool            `json:"-"`
 	AuthorID int64           `json:"-"`
 	GameSlug string          `json:"-"`
 	Type     string          `json:"type"`
@@ -72,35 +73,19 @@ type BotStatus struct {
 	NewStatus string `json:"new_status"`
 }
 
-// MatchStatus обновление статуса матча
-type MatchStatus struct {
-	Bot1ID    int64  `json:"bot1_id"`
-	Bot2ID    int64  `json:"bot2_id"`
-	Author1ID int64  `json:"author1_id"`
-	Author2ID int64  `json:"author2_id"`
-	NewStatus string `json:"new_status"`
-}
-
-// MatchResult результаты прошедшего матча
-type MatchResult struct {
-	Bot1ID    int64 `json:"bot1_id"`
-	Bot2ID    int64 `json:"bot2_id"`
-	Author1ID int64 `json:"author1_id"`
-	Author2ID int64 `json:"author2_id"`
-	NewScore1 int64 `json:"new_score1"`
-	NewScore2 int64 `json:"new_score2"`
-	Winner    int   `json:"winner"`
-}
-
 // MatchInfo краткая информация о матче
 type MatchInfo struct {
-	ID       int64       `json:"id"`
-	Result   int         `json:"result"`
-	GameSlug string      `json:"game_slug"`
-	Author1  *AuthorInfo `json:"author_1"`
-	Author2  *AuthorInfo `json:"author_2"`
-	Diff1    int64       `json:"diff1"`
-	Diff2    int64       `json:"diff2"`
+	ID        int64       `json:"id"`
+	Result    int         `json:"result"`
+	GameSlug  string      `json:"game_slug"`
+	Author1   *AuthorInfo `json:"author_1"`
+	Author2   *AuthorInfo `json:"author_2"`
+	Bot1ID    int64       `json:"bot1_id"`
+	Bot2ID    int64       `json:"bot2_id"`
+	NewScore1 int64       `json:"new_score1"`
+	NewScore2 int64       `json:"new_score2"`
+	Diff1     int64       `json:"diff1"`
+	Diff2     int64       `json:"diff2"`
 }
 
 // Replay повтор матча для плеера

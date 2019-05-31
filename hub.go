@@ -63,18 +63,19 @@ func (h *hub) run() {
 				}
 			}
 
-			if _, ok := h.sessions[0]; ok {
-				// для тех, кто слушает игру
-				for _, send := range h.sessions[0][message.GameSlug] {
-					send <- message
-				}
+			if !message.Private {
+				if _, ok := h.sessions[0]; ok {
+					// для тех, кто слушает игру
+					for _, send := range h.sessions[0][message.GameSlug] {
+						send <- message
+					}
 
-				// для тех, кто слушает всё
-				for _, send := range h.sessions[0][""] {
-					send <- message
+					// для тех, кто слушает всё
+					for _, send := range h.sessions[0][""] {
+						send <- message
+					}
 				}
 			}
-
 		}
 	}
 }

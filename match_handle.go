@@ -8,7 +8,10 @@ import (
 
 	"github.com/HotCodeGroup/warscript-utils/models"
 	"github.com/HotCodeGroup/warscript-utils/utils"
+	"github.com/google/uuid"
+
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 )
 
@@ -241,4 +244,42 @@ func GetMatchList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteApplicationJSON(w, http.StatusOK, respMatches)
+}
+
+// OpenWS отдаёт лидерборд
+func OpenWS(w http.ResponseWriter, r *http.Request) {
+	logger := utils.GetLogger(r, logger, "GetBotsList")
+	errWriter := utils.NewErrorResponseWriter(w, logger)
+	// info := SessionInfo(r)
+	// if info == nil {
+	// 	errWriter.WriteWarn(http.StatusUnauthorized, errors.New("session info is not presented"))
+	// 	return
+	// }
+
+	gameSlug := r.URL.Query().Get("game_slug")
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true // мы уже прошли слой CORS
+		},
+	}
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		errWriter.WriteError(http.StatusInternalServerError, errors.Wrap(err, "upgrade to websocket error"))
+		return
+	}
+
+	sessionID := uuid.New().String()
+	wsClient := &BotVerifyClient{
+		SessionID: sessionID,
+		//UserID:    1,
+		GameSlug: gameSlug,
+
+		h:    h,
+		conn: c,
+		send: make(chan *BotStatusMessage),
+	}
+	wsClient.h.register <- wsClient
+
+	go wsClient.WriteStatusUpdates()
+	go wsClient.WaitForClose()
 }
