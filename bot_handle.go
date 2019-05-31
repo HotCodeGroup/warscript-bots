@@ -166,6 +166,12 @@ func GetBotsList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(bots) == 0 {
+		emptyResp := make([]*Bot, 0)
+		utils.WriteApplicationJSON(w, http.StatusOK, emptyResp)
+		return
+	}
+
 	// если мы выбираем только для одного юзера, то нет смысла ходить по сети
 	var authorsSet map[int64]*models.InfoUser
 	if authorID == -1 && userInfo == nil {

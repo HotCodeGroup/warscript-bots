@@ -169,6 +169,12 @@ func GetMatchList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(matches) == 0 {
+		emptyResp := make([]*MatchInfo, 0)
+		utils.WriteApplicationJSON(w, http.StatusOK, emptyResp)
+		return
+	}
+
 	// если мы выбираем только для одного юзера, то нет смысла ходить по сети
 	var authorsSet map[int64]*models.InfoUser
 	// фомируем массив из всех айдишников авторов ботов
