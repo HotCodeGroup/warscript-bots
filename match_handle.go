@@ -141,6 +141,14 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
+	} else {
+		if resp.Error == "" {
+			if matchInfo.Error1.Valid {
+				resp.Error = matchInfo.Error1.String
+			} else if matchInfo.Error2.Valid {
+				resp.Error = matchInfo.Error2.String
+			}
+		}
 	}
 
 	utils.WriteApplicationJSON(w, http.StatusOK, resp)
