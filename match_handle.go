@@ -244,6 +244,8 @@ func GetMatchList(w http.ResponseWriter, r *http.Request) {
 			ID:       match.ID,
 			Result:   match.Result,
 			GameSlug: match.GameSlug,
+			Bot1ID:   match.Bot1,
+			Bot2ID:   match.GetBot2(),
 			Diff1:    match.Diff1,
 			Diff2:    match.GetDiff2(),
 			Author1:  ai1,
