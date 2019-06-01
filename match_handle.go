@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -118,8 +119,12 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 			} else {
 				resp.Code = bot.Code
 			}
-			if matchInfo.Error1.Valid {
-				resp.Error = matchInfo.Error1.String
+			if resp.Error == "" {
+				if matchInfo.Error1.Valid {
+					resp.Error = matchInfo.Error1.String
+				} else {
+					resp.Error = fmt.Sprintf("ERROR: Player1 made an error :c")
+				}
 			}
 		} else if resp.Author2 != nil && session.ID == resp.Author2.ID {
 			bot, err := Bots.GetBotByID(resp.Bot2ID)
@@ -128,8 +133,12 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 			} else {
 				resp.Code = bot.Code
 			}
-			if matchInfo.Error2.Valid {
-				resp.Error = matchInfo.Error2.String
+			if resp.Error == "" {
+				if matchInfo.Error2.Valid {
+					resp.Error = matchInfo.Error2.String
+				} else {
+					resp.Error = fmt.Sprintf("ERROR: Player2 made an error :c")
+				}
 			}
 		}
 	}
