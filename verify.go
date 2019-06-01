@@ -38,6 +38,8 @@ type TesterStatusResult struct {
 	Info   json.RawMessage `json:"info"`
 	States json.RawMessage `json:"states"`
 	Winner int             `json:"result"`
+	Error1 string          `json:"error_1"`
+	Error2 string          `json:"error_2"`
 }
 
 // TestTask представление задачи на проверку, которое кладётся в очередь задач
@@ -143,26 +145,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 		logger.Infof("Processing [%s]", event.Type)
 		switch event.Type {
 		case "status":
-			upd := &TesterStatusUpdate{}
-			err := json.Unmarshal(event.Body, upd)
-			if err != nil {
-				logger.Error(errors.Wrap(err, "can not unmarshal update status body"))
-				continue
-			}
-
-			body, _ := json.Marshal(&BotStatus{
-				BotID:     botID,
-				NewStatus: upd.NewStatus,
-			})
-
-			broadcast <- &BotStatusMessage{
-				AuthorID: authorID,
-				GameSlug: gameSlug,
-				Body:     body,
-				Type:     "verify",
-			}
-
-			status = upd.NewStatus
+			continue
 		case "result":
 			res := &TesterStatusResult{}
 			err := json.Unmarshal(event.Body, res)
@@ -211,6 +194,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				Result:   res.Winner,
 				GameSlug: gameSlug,
 				Bot1:     botID,
+				Error1:   sql.NullString{String: res.Error1, Valid: res.Error1 != ""},
 				Author1:  authorID,
 				Diff1:    diff,
 			}

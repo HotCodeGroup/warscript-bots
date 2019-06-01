@@ -16,11 +16,13 @@ CREATE TABLE "matches"
 
 
 	bot_1 BIGINT NOT NULL REFERENCES bots (id) ON DELETE NO ACTION,
+	error_1 TEXT,
 	author_1 BIGINT NOT NULL,
 	log_1 BYTEA,
 	diff_1 BIGINT NOT NULL,
 
 	bot_2 BIGINT REFERENCES bots (id) ON DELETE NO ACTION,
+	error_2 TEXT,
 	author_2 BIGINT,
 	log_2 BYTEA,
 	diff_2 BIGINT

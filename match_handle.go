@@ -118,6 +118,9 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 			} else {
 				resp.Code = bot.Code
 			}
+			if matchInfo.Error1.Valid {
+				resp.Error = matchInfo.Error1.String
+			}
 		} else if resp.Author2 != nil && session.ID == resp.Author2.ID {
 			bot, err := Bots.GetBotByID(resp.Bot2ID)
 			if err != nil {
@@ -125,7 +128,9 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 			} else {
 				resp.Code = bot.Code
 			}
-			resp.Code = bot.Code
+			if matchInfo.Error2.Valid {
+				resp.Error = matchInfo.Error2.String
+			}
 		}
 	}
 
