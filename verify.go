@@ -204,6 +204,39 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				continue
 			}
 
+			authorInfo, err := authGPRC.GetUserByID(context.Background(), &models.UserID{ID: authorID})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can not get user info"))
+				continue
+			}
+			ai1 := &AuthorInfo{
+				ID:        authorInfo.ID,
+				Username:  authorInfo.Username,
+				PhotoUUID: authorInfo.PhotoUUID,
+				Active:    authorInfo.Active,
+			}
+
+			bodyBroadcast, err := json.Marshal(&MatchInfo{
+				ID:        m.ID,
+				Result:    m.Result,
+				GameSlug:  m.GameSlug,
+				Author1:   ai1,
+				Bot1ID:    botID,
+				NewScore1: diff,
+				Diff1:     diff,
+			})
+			if err != nil {
+				logger.Error(errors.Wrap(err, "can marshal match info"))
+				continue
+			}
+
+			broadcast <- &BotStatusMessage{
+				AuthorID: authorID,
+				GameSlug: gameSlug,
+				Body:     bodyBroadcast,
+				Type:     "match",
+			}
+
 			body1, err := json.Marshal(&NotifyVerifyMessage{
 				BotID:    botID,
 				GameSlug: gameSlug,
@@ -235,21 +268,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				continue
 			}
 
-			logger.Info(res.Error)
 			newStatus := "Not Verifyed. Error!\n"
-
-			body, _ := json.Marshal(&BotStatus{
-				BotID:     botID,
-				NewStatus: newStatus,
-			})
-
-			broadcast <- &BotStatusMessage{
-				AuthorID: authorID,
-				GameSlug: gameSlug,
-				Body:     body,
-				Type:     "verify",
-			}
-
 			err = Bots.SetBotVerifiedByID(botID, false)
 			if err != nil {
 				logger.Error(errors.Wrap(err, "can update bot active status"))
