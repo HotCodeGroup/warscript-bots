@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"strconv"
 
 	"github.com/HotCodeGroup/warscript-utils/utils"
@@ -56,9 +55,8 @@ func (bd *AccessObject) Create(b *BotModel) error {
 	row := tx.QueryRow(`INSERT INTO bots (code, language, author_id, game_slug)
 	 	VALUES ($1, $2, $3, $4) RETURNING id`,
 		&b.Code, &b.Language, &b.AuthorID, &b.GameSlug)
-	if err := row.Scan(&b.ID); err != nil {
-		pgErr, ok := err.(pq.Error)
-		log.Printf("%v %v", pgErr, ok)
+	if err = row.Scan(&b.ID); err != nil {
+		pgErr, ok := err.(*pq.Error)
 		if !ok {
 			return errors.Wrapf(utils.ErrInternal, "create bot row error: %v", err)
 		}
