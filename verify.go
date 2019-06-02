@@ -198,6 +198,7 @@ func processVerifyingStatus(botID, authorID int64, gameSlug string,
 				Bot1:     botID,
 				Error1:   sql.NullString{String: res.Error1, Valid: res.Error1 != ""},
 				Author1:  authorID,
+				Log1:     res.Logs1,
 				Diff1:    diff,
 			}
 			err = Matches.Create(m)
