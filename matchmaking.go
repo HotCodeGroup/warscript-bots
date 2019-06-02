@@ -114,11 +114,13 @@ func processTestingStatus(bot1, bot2 *BotModel,
 				Bot1:    bot1.ID,
 				Error1:  sql.NullString{String: res.Error1, Valid: res.Error1 != ""},
 				Author1: bot1.AuthorID,
+				Log1:    res.Logs1,
 				Diff1:   newScore1 - bot1.Score,
 
 				Bot2:    sql.NullInt64{Int64: bot2.ID, Valid: true},
 				Error2:  sql.NullString{String: res.Error2, Valid: res.Error2 != ""},
 				Author2: sql.NullInt64{Int64: bot2.AuthorID, Valid: true},
+				Log2:    res.Logs2,
 				Diff2:   sql.NullInt64{Int64: newScore2 - bot2.Score, Valid: true},
 			}
 			err = Matches.Create(m)

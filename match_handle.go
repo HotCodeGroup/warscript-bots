@@ -126,6 +126,8 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 					resp.Error = fmt.Sprintf("ERROR: Player2 made an error :c")
 				}
 			}
+
+			resp.Logs = matchInfo.Log1
 		} else if resp.Author2 != nil && session.ID == resp.Author2.ID {
 			bot, err := Bots.GetBotByID(resp.Bot2ID)
 			if err != nil {
@@ -140,6 +142,8 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 					resp.Error = fmt.Sprintf("ERROR: Player1 made an error :c")
 				}
 			}
+
+			resp.Logs = matchInfo.Log2
 		}
 	} else {
 		if resp.Error == "" {

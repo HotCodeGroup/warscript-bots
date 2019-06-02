@@ -40,6 +40,8 @@ type TesterStatusResult struct {
 	Winner int             `json:"result"`
 	Error1 string          `json:"error_1"`
 	Error2 string          `json:"error_2"`
+	Logs1  json.RawMessage `json:"logs_1"`
+	Logs2  json.RawMessage `json:"logs_2"`
 }
 
 // TestTask представление задачи на проверку, которое кладётся в очередь задач

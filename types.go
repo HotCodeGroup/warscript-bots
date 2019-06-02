@@ -98,10 +98,11 @@ type Replay struct {
 // MatchFullInfo полная информация о матче
 type MatchFullInfo struct {
 	MatchInfo
-	Replay    *Replay   `json:"replay"`
-	Error     string    `json:"error"`
-	Timestamp time.Time `json:"timestamp"`
-	Code      string    `json:"code"`
+	Replay    *Replay         `json:"replay"`
+	Logs      json.RawMessage `json:"logs"`
+	Error     string          `json:"error"`
+	Timestamp time.Time       `json:"timestamp"`
+	Code      string          `json:"code"`
 }
 
 // NotifyMatchMessage сообщение для сервиса нотификации о матче
