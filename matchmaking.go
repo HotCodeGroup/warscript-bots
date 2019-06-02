@@ -15,7 +15,7 @@ import (
 
 var (
 	botsLimit = int64(100)
-	gameSlugs = []string{"2atod"}
+	gameSlugs = []string{"pong", "2atod"}
 )
 
 func startMatchmaking() {
