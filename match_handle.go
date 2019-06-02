@@ -112,6 +112,7 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	resp.Logs = json.RawMessage(`{}`)
 	if session != nil {
 		if resp.Author1 != nil && session.ID == resp.Author1.ID {
 			bot, err := Bots.GetBotByID(resp.Bot1ID)
@@ -130,8 +131,6 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 
 			if matchInfo.Log1 != nil {
 				resp.Logs = matchInfo.Log1
-			} else {
-				resp.Logs = json.RawMessage(`{}`)
 			}
 		} else if resp.Author2 != nil && session.ID == resp.Author2.ID {
 			bot, err := Bots.GetBotByID(resp.Bot2ID)
@@ -150,8 +149,6 @@ func GetMatch(w http.ResponseWriter, r *http.Request) {
 
 			if matchInfo.Log2 != nil {
 				resp.Logs = matchInfo.Log2
-			} else {
-				resp.Logs = json.RawMessage(`{}`)
 			}
 		}
 	} else {
